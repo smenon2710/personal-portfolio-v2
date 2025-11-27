@@ -297,6 +297,7 @@ function ChatWidget() {
 }
 
 export default function Home() {
+  const [loadedPreviews, setLoadedPreviews] = useState<Record<string, boolean>>({});
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Top navigation */}
@@ -532,32 +533,49 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Embedded live preview (scaled to fit card) */}
+                {/* Embedded live preview (click to load so page doesn't auto-scroll) */}
                 {project.embedUrl && (
                   <div className="mt-4 overflow-hidden rounded-2xl bg-slate-50">
-                    <div
-                      style={{
-                        transform: project.embedScale
-                          ? `scale(${project.embedScale})`
-                          : undefined,
-                        transformOrigin: "top left",
-                        width: project.embedScale
-                          ? `${100 / project.embedScale}%`
-                          : "100%",
-                        height: project.embedHeight ?? 260,
-                      }}
-                    >
-                      <iframe
-                        src={project.embedUrl}
-                        title={`${project.name} preview`}
+                    {loadedPreviews[project.name] ? (
+                      <div
                         style={{
-                          width: "100%",
-                          height: "100%",
-                          border: "0",
+                          transform: project.embedScale
+                            ? `scale(${project.embedScale})`
+                            : undefined,
+                          transformOrigin: "top left",
+                          width: project.embedScale
+                            ? `${100 / project.embedScale}%`
+                            : "100%",
+                          height: project.embedHeight ?? 260,
                         }}
-                        loading="lazy"
-                      />
-                    </div>
+                      >
+                        <iframe
+                          src={project.embedUrl}
+                          title={`${project.name} preview`}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            border: "0",
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-40 flex-col items-center justify-center gap-2 px-4 text-center text-xs text-slate-500">
+                        <p>
+                          Load an interactive preview of this app inside the card, or use{" "}
+                          <span className="font-semibold text-slate-700">Live Demo</span> to
+                          open it in a new tab.
+                        </p>
+                        <button
+                          onClick={() =>
+                            setLoadedPreviews((prev) => ({ ...prev, [project.name]: true }))
+                          }
+                          className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
+                        >
+                          🔍 Load Preview
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
