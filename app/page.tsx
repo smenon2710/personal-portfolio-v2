@@ -245,7 +245,6 @@ const certifications = [
 const CONTACT = {
   location: "Franklin Park, NJ, USA",
   email: "sujithkumar.v.menon@gmail.com",
-  phone: "609-297-6459",
   linkedin: "https://www.linkedin.com/in/sujithkumar-menon/",
   github: "https://github.com/smenon2710",
 };
