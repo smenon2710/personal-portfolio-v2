@@ -243,7 +243,7 @@ const certifications = [
 ];
 
 const CONTACT = {
-  location: "Franklin Park, NJ, USA",
+  location: "New York City Metropolitan Area",
   email: "sujithkumar.v.menon@gmail.com",
   linkedin: "https://www.linkedin.com/in/sujithkumar-menon/",
   github: "https://github.com/smenon2710",
@@ -709,10 +709,6 @@ export default function Home() {
               >
                 {CONTACT.email}
               </Link>
-              <p className="mt-3 text-xs font-semibold text-slate-500">
-                Phone
-              </p>
-              <p className="mt-1 text-sm text-slate-900">{CONTACT.phone}</p>
             </div>
             <div className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200">
               <p className="text-xs font-semibold text-slate-500">
