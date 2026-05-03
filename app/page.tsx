@@ -289,7 +289,7 @@ function ChatWidget() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-700"
       >
-        💬 Chat with my AI Agent
+        💬 Chat with my Digital Twin
       </button>
     </div>
   );
