@@ -13,6 +13,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - [x] **Animated stat counters** — `CountUp` component with easeOutCubic RAF animation, triggers on scroll-into-view
 - [x] **Mobile hamburger navigation** — SVG hamburger/close toggle; full-width dropdown menu with all nav links + CTA
 
+### Certifications · Completed 2026-05-21
+- [x] **Visual certificate cards** — 3-card grid replacing flat list; each card has a gradient header (brand colors), large initials watermark, issue date, and CTA link
+- [x] **Removed Collibra Data Governance** cert from display
+- [x] **Tableau** — Credly verify link + "✓ Verified" pill (navy-to-blue gradient)
+- [x] **Product Manager Certified** — PDF link (orange gradient), hosted in public/pm-cert.pdf
+- [x] **Applied Generative AI (Purdue)** — PDF link (violet gradient), hosted in public/purdue-genai-cert.pdf
+- [x] **Education & Certifications** restructured from side-by-side columns to stacked sections, giving certs full-width 3-col grid
+
 ### Tier 2 · Visual Polish
 - [ ] **Background grain/noise texture** — 1–3% opacity SVG noise overlay on slate-50 for depth
 - [ ] **Card hover lift** — translateY + shadow transition on project and experience cards

@@ -236,10 +236,39 @@ const education = [
 ];
 
 const certifications = [
-  { title: "Product Manager Certified", org: "Product School" },
-  { title: "Tableau Certified Data Analyst", org: "Tableau" },
-  { title: "Collibra Data Governance", org: "Collibra" },
-  { title: "Applied Generative AI Bootcamp", org: "Purdue University" },
+  {
+    title: "Tableau Certified Data Analyst",
+    org: "Tableau",
+    date: "Jun 2024",
+    colorFrom: "#1e3a5f",
+    colorTo: "#2563eb",
+    initials: "TDA",
+    link: "https://www.credly.com/badges/988edc4b-5fd1-46d1-8b66-f25f6e2356a0",
+    linkLabel: "Verify on Credly",
+    verified: true,
+  },
+  {
+    title: "Product Manager Certified",
+    org: "Product School",
+    date: "Dec 2024",
+    colorFrom: "#7c2d12",
+    colorTo: "#ea580c",
+    initials: "PMC",
+    link: "/pm-cert.pdf",
+    linkLabel: "View Certificate",
+    verified: false,
+  },
+  {
+    title: "Applied Generative AI",
+    org: "Purdue University",
+    date: "May 2025",
+    colorFrom: "#2e1065",
+    colorTo: "#7c3aed",
+    initials: "GenAI",
+    link: "/purdue-genai-cert.pdf",
+    linkLabel: "View Certificate",
+    verified: false,
+  },
 ];
 
 const CONTACT = {
@@ -794,10 +823,8 @@ export default function Home() {
         </section>
 
         {/* ── Education & Certifications ── */}
-        <section
-          id="education"
-          className="mb-16 grid gap-10 md:grid-cols-2 md:items-start"
-        >
+        <section id="education" className="mb-16 space-y-12">
+          {/* Education */}
           <div data-reveal>
             <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
               Education
@@ -818,20 +845,66 @@ export default function Home() {
             </div>
           </div>
 
-          <div data-reveal style={{ transitionDelay: "0.1s" }}>
-            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
+          {/* Certifications — visual cards */}
+          <div>
+            <h2
+              className="font-display text-xl font-semibold tracking-tight text-slate-900"
+              data-reveal
+            >
               Certifications &amp; Training
             </h2>
-            <div className="mt-4 space-y-3">
-              {certifications.map((c) => (
+            <div className="mt-6 grid gap-5 sm:grid-cols-3">
+              {certifications.map((cert, i) => (
                 <div
-                  key={c.title}
-                  className="rounded-2xl bg-white p-3 shadow-sm shadow-slate-200"
+                  key={cert.title}
+                  data-reveal
+                  style={{ transitionDelay: `${i * 0.09}s` }}
+                  className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <p className="font-display text-xs font-semibold text-slate-900">
-                    {c.title}
-                  </p>
-                  <p className="text-[11px] text-slate-500">{c.org}</p>
+                  {/* Gradient visual header */}
+                  <div
+                    style={{
+                      background: `linear-gradient(135deg, ${cert.colorFrom}, ${cert.colorTo})`,
+                    }}
+                    className="relative flex h-32 items-center justify-center overflow-hidden"
+                  >
+                    {/* Watermark */}
+                    <span className="absolute select-none text-[68px] font-black leading-none text-white/10">
+                      {cert.initials}
+                    </span>
+                    {/* Foreground initials */}
+                    <span className="font-display relative text-2xl font-bold tracking-tight text-white/90">
+                      {cert.initials}
+                    </span>
+                    {/* Verified pill for Credly-backed certs */}
+                    {cert.verified && (
+                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+                        ✓ Verified
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Card body */}
+                  <div className="flex flex-1 flex-col p-4">
+                    <div>
+                      <h3 className="font-display text-sm font-semibold leading-snug text-slate-900">
+                        {cert.title}
+                      </h3>
+                      <p className="mt-1 text-xs text-slate-500">{cert.org}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">
+                        {cert.date}
+                      </p>
+                    </div>
+                    <div className="mt-auto pt-4">
+                      <Link
+                        href={cert.link}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        {cert.linkLabel} →
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
