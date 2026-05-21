@@ -13,6 +13,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - [x] **Animated stat counters** — `CountUp` component with easeOutCubic RAF animation, triggers on scroll-into-view
 - [x] **Mobile hamburger navigation** — SVG hamburger/close toggle; full-width dropdown menu with all nav links + CTA
 
+### Education & Certifications · Updated 2026-05-21
+- [x] **Education section** redesigned with prominent certificate thumbnail cards (2-col grid)
+- [x] **Purdue GenAI Bootcamp** moved from Certifications → Education; shown with certificate thumbnail
+- [x] **B.E., Information Technology** now shows certificate thumbnail (be-cert.jpg); click opens full image
+- [x] **Certifications section** trimmed to 2 cards (Tableau + Product Manager only)
+
 ### Certifications · Completed 2026-05-21
 - [x] **Visual certificate cards** — 3-card grid replacing flat list; each card has a gradient header (brand colors), large initials watermark, issue date, and CTA link
 - [x] **Removed Collibra Data Governance** cert from display

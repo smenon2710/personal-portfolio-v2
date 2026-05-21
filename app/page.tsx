@@ -230,8 +230,20 @@ const education = [
   {
     title: "B.E., Information Technology",
     org: "Pimpri Chinchwad College of Engineering",
+    date: "",
     detail:
       "Foundation in software engineering, data structures, databases, and system design.",
+    certImage: "/be-cert.jpg",
+    certLink: "/be-cert.jpg",
+  },
+  {
+    title: "Applied Generative AI Bootcamp",
+    org: "Purdue University",
+    date: "May 2025",
+    detail:
+      "Intensive program covering LLMs, RAG pipelines, prompt engineering, and building AI-powered applications.",
+    certImage: "/purdue-genai-cert.jpg",
+    certLink: "/purdue-genai-cert.pdf",
   },
 ];
 
@@ -255,17 +267,6 @@ const certifications = [
     colorTo: "#ea580c",
     initials: "PMC",
     link: "/pm-cert.pdf",
-    linkLabel: "View Certificate",
-    verified: false,
-  },
-  {
-    title: "Applied Generative AI",
-    org: "Purdue University",
-    date: "May 2025",
-    colorFrom: "#2e1065",
-    colorTo: "#7c3aed",
-    initials: "GenAI",
-    link: "/purdue-genai-cert.pdf",
     linkLabel: "View Certificate",
     verified: false,
   },
@@ -829,17 +830,44 @@ export default function Home() {
             <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
               Education
             </h2>
-            <div className="mt-4 space-y-4">
-              {education.map((e) => (
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              {education.map((e, i) => (
                 <div
                   key={e.title}
-                  className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200"
+                  data-reveal
+                  style={{ transitionDelay: `${i * 0.1}s` }}
+                  className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <h3 className="font-display text-sm font-semibold text-slate-900">
-                    {e.title}
-                  </h3>
-                  <p className="text-xs text-slate-500">{e.org}</p>
-                  <p className="mt-2 text-xs text-slate-600">{e.detail}</p>
+                  {/* Certificate thumbnail — click to open full cert */}
+                  <a
+                    href={e.certLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block overflow-hidden bg-slate-50"
+                  >
+                    <div className="relative h-52 w-full">
+                      <Image
+                        src={e.certImage}
+                        alt={`${e.title} certificate`}
+                        fill
+                        className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
+                      />
+                    </div>
+                  </a>
+
+                  {/* Card body */}
+                  <div className="p-4">
+                    <h3 className="font-display text-sm font-semibold text-slate-900">
+                      {e.title}
+                    </h3>
+                    <p className="mt-0.5 text-xs text-slate-500">{e.org}</p>
+                    {e.date && (
+                      <p className="mt-0.5 text-[11px] text-slate-400">
+                        {e.date}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-slate-600">{e.detail}</p>
+                  </div>
                 </div>
               ))}
             </div>
