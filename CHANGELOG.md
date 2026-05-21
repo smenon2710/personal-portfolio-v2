@@ -27,11 +27,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - [x] **Applied Generative AI (Purdue)** — PDF link (violet gradient), hosted in public/purdue-genai-cert.pdf
 - [x] **Education & Certifications** restructured from side-by-side columns to stacked sections, giving certs full-width 3-col grid
 
-### Tier 2 · Visual Polish
-- [ ] **Background grain/noise texture** — 1–3% opacity SVG noise overlay on slate-50 for depth
-- [ ] **Card hover lift** — translateY + shadow transition on project and experience cards
-- [ ] **Scroll progress bar** — 2px blue bar at viewport top tracking scroll depth
-- [ ] **Active nav scroll-spy** — Highlight current section link in sticky header as user scrolls
+### Tier 2 · Visual Polish ✓ Completed 2026-05-21
+- [x] **Background grain/noise texture** — SVG fractalNoise body::after overlay at 3.5% opacity; pointer-events:none so it's purely visual
+- [x] **Card hover lift** — Added translateY + shadow transition to skill category cards (experience/project/cert cards already had it from Tier 1)
+- [x] **Scroll progress bar** — Fixed 2px blue bar at z-[60], width driven by scroll percentage
+- [x] **Active nav scroll-spy** — Single passive scroll listener highlights the current section in both desktop and mobile nav; combined with progress bar in one handler
 
 ### Tier 3 · Structural Improvements
 - [ ] **Experience timeline layout** — Vertical left-border timeline with dot markers replacing stacked cards

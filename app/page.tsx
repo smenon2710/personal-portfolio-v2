@@ -379,6 +379,8 @@ export default function Home() {
     {}
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState("home");
 
   // Wire up scroll-reveal for all [data-reveal] elements
   useEffect(() => {
@@ -398,8 +400,39 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  // Scroll progress bar + active nav scroll-spy (single listener)
+  useEffect(() => {
+    const sectionIds = navItems.map((item) => item.href.slice(1));
+    const HEADER_OFFSET = 80;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } =
+        document.documentElement;
+      setScrollProgress((scrollTop / (scrollHeight - clientHeight)) * 100);
+
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && el.getBoundingClientRect().top <= HEADER_OFFSET) {
+          setActiveSection(sectionIds[i]);
+          return;
+        }
+      }
+      setActiveSection(sectionIds[0]);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Scroll progress bar */}
+      <div
+        className="fixed left-0 top-0 z-[60] h-0.5 bg-blue-600"
+        style={{ width: `${scrollProgress}%` }}
+      />
+
       {/* ── Sticky header ── */}
       <header className="relative sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -420,12 +453,16 @@ export default function Home() {
 
           {/* Desktop nav + CTA */}
           <div className="hidden items-center gap-4 md:flex">
-            <nav className="flex gap-4 text-xs font-medium text-slate-600">
+            <nav className="flex gap-4 text-xs font-medium">
               {navItems.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
-                  className="rounded-full px-3 py-1 hover:bg-blue-50 hover:text-blue-700"
+                  className={`rounded-full px-3 py-1 transition-colors ${
+                    activeSection === item.href.slice(1)
+                      ? "bg-blue-50 font-semibold text-blue-700"
+                      : "text-slate-600 hover:bg-blue-50 hover:text-blue-700"
+                  }`}
                 >
                   {item.label}
                 </a>
@@ -478,7 +515,11 @@ export default function Home() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700"
+                  className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    activeSection === item.href.slice(1)
+                      ? "bg-blue-50 font-semibold text-blue-700"
+                      : "text-slate-700 hover:bg-blue-50 hover:text-blue-700"
+                  }`}
                 >
                   {item.label}
                 </a>
@@ -803,7 +844,7 @@ export default function Home() {
                 key={cat.title}
                 data-reveal
                 style={{ transitionDelay: `${i * 0.07}s` }}
-                className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200"
+                className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <h3 className="font-display text-sm font-semibold text-slate-900">
                   {cat.title}
