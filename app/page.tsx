@@ -172,6 +172,7 @@ const projects: Project[] = [
 const skillCategories = [
   {
     title: "Product Management",
+    accent: "#3b82f6",
     items: [
       "Product Strategy",
       "Go-To-Market",
@@ -185,6 +186,7 @@ const skillCategories = [
   },
   {
     title: "Business Intelligence & Analytics",
+    accent: "#6366f1",
     items: [
       "Tableau",
       "Power BI",
@@ -197,6 +199,7 @@ const skillCategories = [
   },
   {
     title: "Generative AI & Advanced Analytics",
+    accent: "#8b5cf6",
     items: [
       "GenAI Integration",
       "LLM Integration",
@@ -211,6 +214,7 @@ const skillCategories = [
   },
   {
     title: "Data Platforms & Engineering",
+    accent: "#06b6d4",
     items: [
       "Python",
       "Snowflake",
@@ -621,8 +625,16 @@ export default function Home() {
           <div
             data-reveal
             style={{ transitionDelay: "0.18s" }}
-            className="flex justify-center"
+            className="relative flex justify-center"
           >
+            {/* Soft radial mesh behind the card */}
+            <div
+              className="pointer-events-none absolute inset-0 -z-10 blur-3xl"
+              style={{
+                background:
+                  "radial-gradient(ellipse 85% 85% at 50% 45%, rgba(147,197,253,0.5) 0%, rgba(196,181,253,0.2) 50%, transparent 70%)",
+              }}
+            />
             <div className="relative flex w-full max-w-sm flex-col items-center rounded-3xl bg-gradient-to-b from-blue-50 via-white to-slate-50 p-6 shadow-[0_18px_45px_rgba(37,99,235,0.28)]">
               <div className="relative h-40 w-40">
                 <div className="absolute inset-0 rounded-full bg-blue-300/60 blur-2xl" />
@@ -678,36 +690,45 @@ export default function Home() {
           >
             Experience &amp; Impact
           </h2>
-          <div className="mt-6 space-y-6">
-            {experience.map((job, i) => (
-              <div
-                key={`${job.company}-${job.period}`}
-                data-reveal
-                style={{ transitionDelay: `${i * 0.07}s` }}
-                className="rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <div>
-                    <h3 className="font-display text-sm font-semibold text-slate-900">
-                      {job.role}
-                    </h3>
-                    <p className="text-xs text-slate-500">{job.company}</p>
-                  </div>
-                  <div className="text-right text-xs text-slate-500">
-                    <div>{job.period}</div>
-                    <div>{job.location}</div>
+          <div className="relative mt-6">
+            {/* Vertical timeline line */}
+            <div className="absolute bottom-3 left-[7px] top-3 w-px bg-blue-200" />
+            <div className="space-y-6">
+              {experience.map((job, i) => (
+                <div
+                  key={`${job.company}-${job.period}`}
+                  data-reveal
+                  style={{ transitionDelay: `${i * 0.07}s` }}
+                  className="relative pl-8"
+                >
+                  {/* Timeline dot */}
+                  <div className="absolute left-0 top-5 h-3.5 w-3.5 rounded-full border-2 border-blue-500 bg-white" />
+
+                  <div className="rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <div>
+                        <h3 className="font-display text-sm font-semibold text-slate-900">
+                          {job.role}
+                        </h3>
+                        <p className="text-xs text-slate-500">{job.company}</p>
+                      </div>
+                      <div className="text-right text-xs text-slate-500">
+                        <div>{job.period}</div>
+                        <div>{job.location}</div>
+                      </div>
+                    </div>
+                    <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
+                      {job.bullets.map((b) => (
+                        <li key={b} className="flex gap-2">
+                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-                <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
-                  {job.bullets.map((b) => (
-                    <li key={b} className="flex gap-2">
-                      <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
@@ -844,20 +865,24 @@ export default function Home() {
                 key={cat.title}
                 data-reveal
                 style={{ transitionDelay: `${i * 0.07}s` }}
-                className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                className="overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
-                <h3 className="font-display text-sm font-semibold text-slate-900">
-                  {cat.title}
-                </h3>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {cat.items.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700"
-                    >
-                      {item}
-                    </span>
-                  ))}
+                {/* Category accent bar */}
+                <div className="h-1" style={{ backgroundColor: cat.accent }} />
+                <div className="p-4">
+                  <h3 className="font-display text-sm font-semibold text-slate-900">
+                    {cat.title}
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {cat.items.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}

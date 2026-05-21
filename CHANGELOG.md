@@ -33,10 +33,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - [x] **Scroll progress bar** — Fixed 2px blue bar at z-[60], width driven by scroll percentage
 - [x] **Active nav scroll-spy** — Single passive scroll listener highlights the current section in both desktop and mobile nav; combined with progress bar in one handler
 
-### Tier 3 · Structural Improvements
-- [ ] **Experience timeline layout** — Vertical left-border timeline with dot markers replacing stacked cards
-- [ ] **Hero background mesh** — Soft radial gradient or blob behind profile photo card
-- [ ] **Skills section redesign** — Category accent bars + reorganized pill layout for visual hierarchy
+### Tier 3 · Structural Improvements ✓ Completed 2026-05-21
+- [x] **Experience timeline** — Vertical `bg-blue-200` line at `left-[7px]` with hollow blue dot markers per entry; cards indented `pl-8` to sit beside the line
+- [x] **Hero background mesh** — Radial gradient blob (blue-200 → purple-200 → transparent) at `-z-10` behind the profile photo card using `blur-3xl`
+- [x] **Skills section redesign** — Each category card gets a 4px colored accent bar at top (`blue` / `indigo` / `violet` / `cyan`); cards now `overflow-hidden` to cleanly clip the bar to the rounded corners
 
 ### Tier 4 · Optional / Larger Scope
 - [ ] **Dark mode toggle** — Wire in-app toggle to the `prefers-color-scheme` CSS already in globals.css
