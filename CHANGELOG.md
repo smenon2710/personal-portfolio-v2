@@ -1,0 +1,60 @@
+# Changelog
+
+All notable changes to this portfolio are documented here.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
+## [Unreleased] — Planned Enhancements
+
+### Tier 1 · High Impact, Low Risk ✓ Completed 2026-05-21
+- [x] **Typography upgrade** — Replaced Inter with Syne (headings, `font-display`) + DM Sans (body, `font-sans`) via next/font/google
+- [x] **Scroll-reveal animations** — IntersectionObserver fades sections and cards up on entry; staggered `transitionDelay` per card index
+- [x] **Animated stat counters** — `CountUp` component with easeOutCubic RAF animation, triggers on scroll-into-view
+- [x] **Mobile hamburger navigation** — SVG hamburger/close toggle; full-width dropdown menu with all nav links + CTA
+
+### Tier 2 · Visual Polish
+- [ ] **Background grain/noise texture** — 1–3% opacity SVG noise overlay on slate-50 for depth
+- [ ] **Card hover lift** — translateY + shadow transition on project and experience cards
+- [ ] **Scroll progress bar** — 2px blue bar at viewport top tracking scroll depth
+- [ ] **Active nav scroll-spy** — Highlight current section link in sticky header as user scrolls
+
+### Tier 3 · Structural Improvements
+- [ ] **Experience timeline layout** — Vertical left-border timeline with dot markers replacing stacked cards
+- [ ] **Hero background mesh** — Soft radial gradient or blob behind profile photo card
+- [ ] **Skills section redesign** — Category accent bars + reorganized pill layout for visual hierarchy
+
+### Tier 4 · Optional / Larger Scope
+- [ ] **Dark mode toggle** — Wire in-app toggle to the `prefers-color-scheme` CSS already in globals.css
+- [ ] **Contact form** — Replace mailto link with working form (Formspree or Resend)
+- [ ] **Open Graph metadata** — Add og:image, og:title, twitter:card to layout.tsx for social sharing
+
+### Tech Debt
+- [x] **Remove unused CSS vars** — Removed `--font-geist-sans` / `--font-geist-mono` from globals.css
+- [x] **Type the `isAgent` field properly** — Added `type Project` with `isAgent?: true`; removed all `(project as any)` casts
+
+---
+
+## [0.2.0] — 2025-05-21
+
+### Changed
+- Chat bubble text updated
+- Location updated to New York City Metropolitan Area
+- Phone number removed from CONTACT object
+
+## [0.1.1] — 2025 (prior)
+
+### Fixed
+- React Server Components CVE vulnerabilities patched (Next.js upgrade)
+
+## [0.1.0] — Initial Release
+
+### Added
+- Single-page portfolio: Hero, About, Experience, Projects, Skills, Education, Contact
+- Floating ChatWidget (Hugging Face Spaces iframe — Digital Twin agent)
+- Lazy-loaded project iframe previews with click-to-load UX
+- Sticky header with anchor navigation
+- 5 featured projects: Restobot, GenAI SQL Assistant, InsightMate, AI Stock Analyzer, Digital Twin
+- 6 experience entries spanning 2011–Present
+- Contact section with email, LinkedIn, GitHub, and Google Calendar booking link
+- Deployed on Vercel

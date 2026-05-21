@@ -2,8 +2,22 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
+// ── Types ──────────────────────────────────────────────────────────────────────
+type Project = {
+  name: string;
+  description: string;
+  tech: string[];
+  liveUrl: string;
+  embedUrl: string;
+  embedScale: number;
+  embedHeight: number;
+  githubUrl: string;
+  isAgent?: true;
+};
+
+// ── Static data ────────────────────────────────────────────────────────────────
 const navItems = [
   { href: "#home", label: "Home" },
   { href: "#about", label: "About" },
@@ -15,10 +29,10 @@ const navItems = [
 ];
 
 const highlights = [
-  { label: "Years of Experience", value: "14+" },
-  { label: "Efficiency Gains", value: "up to 60%" },
-  { label: "User Adoption Increase", value: "35%" },
-  { label: "On-time Delivery", value: "100%" },
+  { label: "Years of Experience", num: 14, suffix: "+", prefix: "" },
+  { label: "Efficiency Gains", num: 60, suffix: "%", prefix: "up to " },
+  { label: "User Adoption Increase", num: 35, suffix: "%", prefix: "" },
+  { label: "On-time Delivery", num: 100, suffix: "%", prefix: "" },
 ];
 
 const experience = [
@@ -94,7 +108,7 @@ const experience = [
   },
 ];
 
-const projects = [
+const projects: Project[] = [
   {
     name: "Restobot – AI Restaurant Assistant",
     description:
@@ -111,8 +125,7 @@ const projects = [
     description:
       "Self-service GenAI analytics assistant that translates natural language into SQL, empowering non-technical users to query structured data and visualize insights in real time.",
     tech: ["Python", "Streamlit", "SQLite", "OpenAI", "NLP"],
-    liveUrl:
-      "https://agspurdue-e4xbcubsa45ww4cv5qmrnz.streamlit.app",
+    liveUrl: "https://agspurdue-e4xbcubsa45ww4cv5qmrnz.streamlit.app",
     embedUrl:
       "https://agspurdue-e4xbcubsa45ww4cv5qmrnz.streamlit.app/?embedded=true",
     embedScale: 0.8,
@@ -135,8 +148,7 @@ const projects = [
     description:
       "AI-driven financial insights tool that combines sector-based stock discovery, GPT recommendations, and trend visualizations using real-time and sentiment data.",
     tech: ["GPT-4", "Streamlit", "yFinance", "Plotly", "Sentiment Analysis"],
-    liveUrl:
-      "https://ai-financial-analyst-smenon2710.streamlit.app",
+    liveUrl: "https://ai-financial-analyst-smenon2710.streamlit.app",
     embedUrl:
       "https://ai-financial-analyst-smenon2710.streamlit.app/?embedded=true",
     embedScale: 0.7,
@@ -153,7 +165,7 @@ const projects = [
     embedScale: 0.8,
     embedHeight: 320,
     githubUrl: "https://github.com/smenon2710",
-    isAgent: true as const,
+    isAgent: true,
   },
 ];
 
@@ -224,22 +236,10 @@ const education = [
 ];
 
 const certifications = [
-  {
-    title: "Product Manager Certified",
-    org: "Product School",
-  },
-  {
-    title: "Tableau Certified Data Analyst",
-    org: "Tableau",
-  },
-  {
-    title: "Collibra Data Governance",
-    org: "Collibra",
-  },
-  {
-    title: "Applied Generative AI Bootcamp",
-    org: "Purdue University",
-  },
+  { title: "Product Manager Certified", org: "Product School" },
+  { title: "Tableau Certified Data Analyst", org: "Tableau" },
+  { title: "Collibra Data Governance", org: "Collibra" },
+  { title: "Applied Generative AI Bootcamp", org: "Purdue University" },
 ];
 
 const CONTACT = {
@@ -249,6 +249,54 @@ const CONTACT = {
   github: "https://github.com/smenon2710",
 };
 
+// ── CountUp component ──────────────────────────────────────────────────────────
+function CountUp({
+  target,
+  suffix = "",
+  prefix = "",
+}: {
+  target: number;
+  suffix?: string;
+  prefix?: string;
+}) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        const duration = 1400;
+        const startTime = performance.now();
+        const tick = (now: number) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.floor(eased * target));
+          if (progress < 1) requestAnimationFrame(tick);
+          else setCount(target);
+        };
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <span ref={ref}>
+      {prefix}
+      {count}
+      {suffix}
+    </span>
+  );
+}
+
+// ── ChatWidget ─────────────────────────────────────────────────────────────────
 function ChatWidget() {
   const [open, setOpen] = useState(false);
 
@@ -258,7 +306,7 @@ function ChatWidget() {
         <div className="mb-3 w-[360px] max-w-[95vw] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="font-display text-sm font-semibold text-slate-900">
                 Chat with Sujith
               </p>
               <p className="text-xs text-slate-500">Sujith&apos;s Digital Twin</p>
@@ -295,19 +343,43 @@ function ChatWidget() {
   );
 }
 
+// ── Page ───────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [loadedPreviews, setLoadedPreviews] = useState<Record<string, boolean>>({});
+  const [loadedPreviews, setLoadedPreviews] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Wire up scroll-reveal for all [data-reveal] elements
+  useEffect(() => {
+    const elements = document.querySelectorAll("[data-reveal]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+    );
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Top navigation */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
+      {/* ── Sticky header ── */}
+      <header className="relative sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          {/* Brand */}
           <div className="flex items-center gap-2">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
               SM
             </span>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold tracking-tight">
+              <span className="font-display text-sm font-semibold tracking-tight">
                 Sujithkumar Menon
               </span>
               <span className="text-[11px] text-slate-500">
@@ -316,7 +388,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Nav + CTA (desktop) */}
+          {/* Desktop nav + CTA */}
           <div className="hidden items-center gap-4 md:flex">
             <nav className="flex gap-4 text-xs font-medium text-slate-600">
               {navItems.map((item) => (
@@ -337,21 +409,80 @@ export default function Home() {
               📅 Book Intro Call
             </Link>
           </div>
+
+          {/* Mobile hamburger button */}
+          <button
+            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 md:hidden"
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M2 2l12 12M14 2L2 14"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M2 4h12M2 8h12M2 12h12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div className="absolute left-0 right-0 top-full border-b border-slate-100 bg-white/95 shadow-lg backdrop-blur md:hidden">
+            <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <a
+                href="https://calendar.app.google/7fvRq224455C7kNS8"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-2 rounded-full bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-blue-700"
+              >
+                📅 Book Intro Call
+              </a>
+            </nav>
+          </div>
+        )}
       </header>
 
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-10">
-        {/* Hero */}
+        {/* ── Hero ── */}
         <section
           id="home"
           className="mb-16 grid gap-10 md:grid-cols-[1.8fr,1.2fr] md:items-center"
         >
-          {/* Left: intro */}
-          <div className="rounded-3xl bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+          {/* Left: intro card */}
+          <div
+            data-reveal
+            style={{ transitionDelay: "0.05s" }}
+            className="rounded-3xl bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
+          >
             <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-blue-600">
               <span>🏠</span> Home
             </div>
-            <h1 className="mb-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+            <h1 className="font-display mb-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
               Analytics Product Manager | BI, GenAI &amp; Data Platforms
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-slate-600 sm:text-[15px]">
@@ -392,11 +523,16 @@ export default function Home() {
               </Link>
             </div>
 
+            {/* Animated stat counters */}
             <div className="mt-7 grid gap-3 rounded-2xl bg-slate-50 p-4 sm:grid-cols-4">
               {highlights.map((h) => (
                 <div key={h.label} className="text-center sm:text-left">
-                  <div className="text-lg font-semibold text-blue-600">
-                    {h.value}
+                  <div className="font-display text-lg font-semibold text-blue-600">
+                    <CountUp
+                      target={h.num}
+                      suffix={h.suffix}
+                      prefix={h.prefix}
+                    />
                   </div>
                   <div className="mt-1 text-[11px] font-medium text-slate-500">
                     {h.label}
@@ -411,12 +547,15 @@ export default function Home() {
           </div>
 
           {/* Right: photo card */}
-          <div className="flex justify-center">
+          <div
+            data-reveal
+            style={{ transitionDelay: "0.18s" }}
+            className="flex justify-center"
+          >
             <div className="relative flex w-full max-w-sm flex-col items-center rounded-3xl bg-gradient-to-b from-blue-50 via-white to-slate-50 p-6 shadow-[0_18px_45px_rgba(37,99,235,0.28)]">
               <div className="relative h-40 w-40">
                 <div className="absolute inset-0 rounded-full bg-blue-300/60 blur-2xl" />
                 <div className="relative h-full w-full overflow-hidden rounded-full border-[5px] border-blue-600 bg-white">
-                  {/* ensure /sujith-profile.png exists in public/ */}
                   <Image
                     src="/sujith-profile.png"
                     alt="Sujithkumar Menon"
@@ -428,7 +567,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="mt-4 text-center">
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="font-display text-sm font-semibold text-slate-900">
                   Sujithkumar Menon
                 </p>
                 <p className="text-xs text-slate-500">
@@ -443,9 +582,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* About */}
-        <section id="about" className="mb-16">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+        {/* ── About ── */}
+        <section id="about" className="mb-16" data-reveal>
+          <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
             About Me
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
@@ -460,20 +599,25 @@ export default function Home() {
           </p>
         </section>
 
-        {/* Experience */}
+        {/* ── Experience ── */}
         <section id="experience" className="mb-16">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          <h2
+            className="font-display text-xl font-semibold tracking-tight text-slate-900"
+            data-reveal
+          >
             Experience &amp; Impact
           </h2>
           <div className="mt-6 space-y-6">
-            {experience.map((job) => (
+            {experience.map((job, i) => (
               <div
                 key={`${job.company}-${job.period}`}
-                className="rounded-3xl bg-white p-5 shadow-sm shadow-slate-200"
+                data-reveal
+                style={{ transitionDelay: `${i * 0.07}s` }}
+                className="rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">
+                    <h3 className="font-display text-sm font-semibold text-slate-900">
                       {job.role}
                     </h3>
                     <p className="text-xs text-slate-500">{job.company}</p>
@@ -496,10 +640,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Projects */}
+        {/* ── Projects ── */}
         <section id="projects" className="mb-16">
-          <div className="flex items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          <div
+            className="flex items-baseline justify-between gap-2"
+            data-reveal
+          >
+            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
               Featured Projects
             </h2>
             <span className="text-xs text-slate-500">
@@ -508,14 +655,16 @@ export default function Home() {
           </div>
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
-            {projects.map((project) => (
+            {projects.map((project, i) => (
               <article
                 key={project.name}
-                className={`flex flex-col rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 ${
-                  (project as any).isAgent ? "border border-blue-100" : ""
+                data-reveal
+                style={{ transitionDelay: `${i * 0.08}s` }}
+                className={`flex flex-col rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                  project.isAgent ? "border border-blue-100" : ""
                 }`}
               >
-                <h3 className="text-sm font-semibold text-slate-900">
+                <h3 className="font-display text-sm font-semibold text-slate-900">
                   {project.name}
                 </h3>
                 <p className="mt-2 text-xs text-slate-600">
@@ -532,7 +681,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Embedded live preview (click to load so page doesn't auto-scroll) */}
+                {/* Lazy-loaded iframe preview */}
                 {project.embedUrl && (
                   <div className="mt-4 overflow-hidden rounded-2xl bg-slate-50">
                     {loadedPreviews[project.name] ? (
@@ -551,23 +700,25 @@ export default function Home() {
                         <iframe
                           src={project.embedUrl}
                           title={`${project.name} preview`}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            border: "0",
-                          }}
+                          style={{ width: "100%", height: "100%", border: "0" }}
                         />
                       </div>
                     ) : (
                       <div className="flex h-40 flex-col items-center justify-center gap-2 px-4 text-center text-xs text-slate-500">
                         <p>
-                          Load an interactive preview of this app inside the card, or use{" "}
-                          <span className="font-semibold text-slate-700">Live Demo</span> to
-                          open it in a new tab.
+                          Load an interactive preview of this app inside the
+                          card, or use{" "}
+                          <span className="font-semibold text-slate-700">
+                            Live Demo
+                          </span>{" "}
+                          to open it in a new tab.
                         </p>
                         <button
                           onClick={() =>
-                            setLoadedPreviews((prev) => ({ ...prev, [project.name]: true }))
+                            setLoadedPreviews((prev) => ({
+                              ...prev,
+                              [project.name]: true,
+                            }))
                           }
                           className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
                         >
@@ -583,12 +734,10 @@ export default function Home() {
                     href={project.liveUrl}
                     target="_blank"
                     className={`rounded-full px-3 py-1 font-medium text-white hover:bg-blue-700 ${
-                      (project as any).isAgent
-                        ? "bg-blue-500"
-                        : "bg-blue-600"
+                      project.isAgent ? "bg-blue-500" : "bg-blue-600"
                     }`}
                   >
-                    { (project as any).isAgent ? "Open Agent" : "Live Demo" }
+                    {project.isAgent ? "Open Agent" : "Live Demo"}
                   </Link>
                   <Link
                     href={project.githubUrl}
@@ -599,7 +748,7 @@ export default function Home() {
                   </Link>
                 </div>
 
-                { (project as any).isAgent && (
+                {project.isAgent && (
                   <p className="mt-2 text-[11px] text-slate-500">
                     Tip: You can also use the floating bubble in the bottom-right
                     corner to chat with this agent while browsing the site.
@@ -610,18 +759,23 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Skills */}
+        {/* ── Skills ── */}
         <section id="skills" className="mb-16">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          <h2
+            className="font-display text-xl font-semibold tracking-tight text-slate-900"
+            data-reveal
+          >
             Skills &amp; Tooling
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {skillCategories.map((cat) => (
+            {skillCategories.map((cat, i) => (
               <div
                 key={cat.title}
+                data-reveal
+                style={{ transitionDelay: `${i * 0.07}s` }}
                 className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200"
               >
-                <h3 className="text-sm font-semibold text-slate-900">
+                <h3 className="font-display text-sm font-semibold text-slate-900">
                   {cat.title}
                 </h3>
                 <div className="mt-3 flex flex-wrap gap-1.5">
@@ -639,13 +793,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Education & Certifications */}
+        {/* ── Education & Certifications ── */}
         <section
           id="education"
           className="mb-16 grid gap-10 md:grid-cols-2 md:items-start"
         >
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          <div data-reveal>
+            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
               Education
             </h2>
             <div className="mt-4 space-y-4">
@@ -654,7 +808,7 @@ export default function Home() {
                   key={e.title}
                   className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200"
                 >
-                  <h3 className="text-sm font-semibold text-slate-900">
+                  <h3 className="font-display text-sm font-semibold text-slate-900">
                     {e.title}
                   </h3>
                   <p className="text-xs text-slate-500">{e.org}</p>
@@ -664,8 +818,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+          <div data-reveal style={{ transitionDelay: "0.1s" }}>
+            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
               Certifications &amp; Training
             </h2>
             <div className="mt-4 space-y-3">
@@ -674,7 +828,7 @@ export default function Home() {
                   key={c.title}
                   className="rounded-2xl bg-white p-3 shadow-sm shadow-slate-200"
                 >
-                  <p className="text-xs font-semibold text-slate-900">
+                  <p className="font-display text-xs font-semibold text-slate-900">
                     {c.title}
                   </p>
                   <p className="text-[11px] text-slate-500">{c.org}</p>
@@ -684,9 +838,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Contact */}
-        <section id="contact">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+        {/* ── Contact ── */}
+        <section id="contact" data-reveal>
+          <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
             Let&apos;s Connect
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-slate-600">
