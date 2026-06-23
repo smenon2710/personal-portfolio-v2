@@ -1,33 +1,13 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
-
-// ── Types ──────────────────────────────────────────────────────────────────────
-type Project = {
-  name: string;
-  description: string;
-  tech: string[];
-  liveUrl: string;
-  embedUrl: string;
-  embedScale: number;
-  embedHeight: number;
-  githubUrl: string;
-  isAgent?: true;
-};
+import Header from "./components/Header";
+import CountUp from "./components/CountUp";
+import ProjectGrid from "./components/ProjectGrid";
+import ChatWidget from "./components/ChatWidget";
+import ScrollRevealInit from "./components/ScrollRevealInit";
+import type { Project } from "./components/ProjectGrid";
 
 // ── Static data ────────────────────────────────────────────────────────────────
-const navItems = [
-  { href: "#home", label: "Home" },
-  { href: "#about", label: "About" },
-  { href: "#experience", label: "Experience" },
-  { href: "#projects", label: "Projects" },
-  { href: "#skills", label: "Skills" },
-  { href: "#education", label: "Education" },
-  { href: "#contact", label: "Contact" },
-];
-
 const highlights = [
   { label: "Years of Experience", num: 14, suffix: "+", prefix: "" },
   { label: "Efficiency Gains", num: 60, suffix: "%", prefix: "up to " },
@@ -247,7 +227,7 @@ const education = [
     detail:
       "Intensive program covering LLMs, RAG pipelines, prompt engineering, and building AI-powered applications.",
     certImage: "/purdue-genai-cert.jpg",
-    certLink: "/purdue-genai-cert.pdf",
+    certLink: "/purdue-genai-cert.jpg",
   },
 ];
 
@@ -283,415 +263,12 @@ const CONTACT = {
   github: "https://github.com/smenon2710",
 };
 
-// ── CountUp component ──────────────────────────────────────────────────────────
-function CountUp({
-  target,
-  suffix = "",
-  prefix = "",
-}: {
-  target: number;
-  suffix?: string;
-  prefix?: string;
-}) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        const duration = 1400;
-        const startTime = performance.now();
-        const tick = (now: number) => {
-          const elapsed = now - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          setCount(Math.floor(eased * target));
-          if (progress < 1) requestAnimationFrame(tick);
-          else setCount(target);
-        };
-        requestAnimationFrame(tick);
-      },
-      { threshold: 0.5 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return (
-    <span ref={ref}>
-      {prefix}
-      {count}
-      {suffix}
-    </span>
-  );
-}
-
-// ── ChatWidget ─────────────────────────────────────────────────────────────────
-type ChatMessage = { role: "user" | "assistant"; content: string };
-type UserInfo = { name?: string; email?: string; purpose?: string };
-
-const INITIAL_GREETING =
-  "Hi! I'm Sujith's Digital Twin. I'd love to help you learn about his background and experience. Could you please share your name and email address first?";
-
-function ChatWidget() {
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [userInfo, setUserInfo] = useState<UserInfo>({});
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [streaming, setStreaming] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  // Show greeting on first open
-  useEffect(() => {
-    if (open && messages.length === 0) {
-      setMessages([{ role: "assistant", content: INITIAL_GREETING }]);
-    }
-  }, [open, messages.length]);
-
-  // Auto-scroll to latest message
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
-
-  async function send() {
-    const text = input.trim();
-    if (!text || loading || streaming) return;
-    setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history: messages, userInfo }),
-      });
-
-      const newUserInfo = JSON.parse(res.headers.get("X-UserInfo") ?? "{}");
-      setUserInfo(newUserInfo);
-
-      if (!res.body) throw new Error("No response body");
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-
-      setLoading(false);
-      setStreaming(true);
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const updated = [...prev];
-          const last = updated[updated.length - 1];
-          return [
-            ...updated.slice(0, -1),
-            { ...last, content: last.content + chunk },
-          ];
-        });
-      }
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Something went wrong. Please try again." },
-      ]);
-    } finally {
-      setLoading(false);
-      setStreaming(false);
-    }
-  }
-
-  const busy = loading || streaming;
-
-  return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
-      {open && (
-        <div
-          className="mb-3 flex w-[360px] max-w-[95vw] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_40px_rgba(15,23,42,0.12)]"
-          style={{ height: "520px" }}
-        >
-          {/* Header */}
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/60 px-4 py-3">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
-                SM
-              </div>
-              <div>
-                <p className="font-display text-sm font-semibold leading-none text-slate-900">
-                  Sujith&apos;s Digital Twin
-                </p>
-                <p className="mt-0.5 text-[10px] text-slate-400">
-                  AI · Analytics PM · BI
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-              aria-label="Close chat"
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            {messages.map((msg, i) => {
-              const isLastAssistant =
-                streaming && i === messages.length - 1 && msg.role === "assistant";
-              return (
-                <div
-                  key={i}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[84%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
-                      msg.role === "user"
-                        ? "rounded-br-sm bg-blue-600 text-white"
-                        : `rounded-bl-sm bg-slate-100 text-slate-800 ${isLastAssistant ? "streaming-cursor" : ""}`
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              );
-            })}
-
-            {loading && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-sm bg-slate-100 px-3.5 py-3">
-                  <span className="flex gap-1">
-                    {[0, 160, 320].map((delay) => (
-                      <span
-                        key={delay}
-                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
-                        style={{ animationDelay: `${delay}ms` }}
-                      />
-                    ))}
-                  </span>
-                </div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Input */}
-          <div className="shrink-0 border-t border-slate-100 p-3">
-            <div className="flex gap-2">
-              <input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
-                placeholder="Ask me anything…"
-                disabled={busy}
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50"
-              />
-              <button
-                onClick={send}
-                disabled={busy || !input.trim()}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:opacity-40"
-                aria-label="Send"
-              >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M13 1L1 5.5l5 1.5L7.5 13 13 1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="shrink-0 border-t border-slate-100 bg-slate-50/60 px-4 py-2 text-center text-[10px] text-slate-400">
-            Powered by Groq · Llama 3.3 70B
-          </div>
-        </div>
-      )}
-
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-colors hover:bg-blue-700"
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M7 1C3.686 1 1 3.238 1 6c0 1.657.9 3.134 2.3 4.1L3 13l2.8-1.4A7.5 7.5 0 007 11c3.314 0 6-2.238 6-5s-2.686-5-6-5z" fill="currentColor"/>
-        </svg>
-        Chat with my Digital Twin
-      </button>
-    </div>
-  );
-}
-
 // ── Page ───────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [loadedPreviews, setLoadedPreviews] = useState<Record<string, boolean>>(
-    {}
-  );
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeSection, setActiveSection] = useState("home");
-
-  // Wire up scroll-reveal for all [data-reveal] elements
-  useEffect(() => {
-    const elements = document.querySelectorAll("[data-reveal]");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("revealed");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
-    );
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-
-  // Scroll progress bar + active nav scroll-spy (single listener)
-  useEffect(() => {
-    const sectionIds = navItems.map((item) => item.href.slice(1));
-    const HEADER_OFFSET = 80;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } =
-        document.documentElement;
-      setScrollProgress((scrollTop / (scrollHeight - clientHeight)) * 100);
-
-      for (let i = sectionIds.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sectionIds[i]);
-        if (el && el.getBoundingClientRect().top <= HEADER_OFFSET) {
-          setActiveSection(sectionIds[i]);
-          return;
-        }
-      }
-      setActiveSection(sectionIds[0]);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Scroll progress bar */}
-      <div
-        className="fixed left-0 top-0 z-[60] h-0.5 bg-blue-600"
-        style={{ width: `${scrollProgress}%` }}
-      />
-
-      {/* ── Sticky header ── */}
-      <header className="relative sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          {/* Brand */}
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-              SM
-            </span>
-            <div className="flex flex-col">
-              <span className="font-display text-sm font-semibold tracking-tight">
-                Sujithkumar Menon
-              </span>
-              <span className="text-[11px] text-slate-500">
-                Analytics Product Manager · BI · GenAI
-              </span>
-            </div>
-          </div>
-
-          {/* Desktop nav + CTA */}
-          <div className="hidden items-center gap-4 md:flex">
-            <nav className="flex gap-4 text-xs font-medium">
-              {navItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={`rounded-full px-3 py-1 transition-colors ${
-                    activeSection === item.href.slice(1)
-                      ? "bg-blue-50 font-semibold text-blue-700"
-                      : "text-slate-600 hover:bg-blue-50 hover:text-blue-700"
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-            <Link
-              href="https://calendar.app.google/7fvRq224455C7kNS8"
-              target="_blank"
-              className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-blue-500/40 hover:bg-blue-700"
-            >
-              📅 Book Intro Call
-            </Link>
-          </div>
-
-          {/* Mobile hamburger button */}
-          <button
-            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 md:hidden"
-            onClick={() => setMobileMenuOpen((v) => !v)}
-            aria-label="Toggle navigation menu"
-            aria-expanded={mobileMenuOpen}
-          >
-            {mobileMenuOpen ? (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M2 2l12 12M14 2L2 14"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M2 4h12M2 8h12M2 12h12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        {/* Mobile dropdown */}
-        {mobileMenuOpen && (
-          <div className="absolute left-0 right-0 top-full border-b border-slate-100 bg-white/95 shadow-lg backdrop-blur md:hidden">
-            <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
-              {navItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                    activeSection === item.href.slice(1)
-                      ? "bg-blue-50 font-semibold text-blue-700"
-                      : "text-slate-700 hover:bg-blue-50 hover:text-blue-700"
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-              <a
-                href="https://calendar.app.google/7fvRq224455C7kNS8"
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 rounded-full bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-blue-700"
-              >
-                📅 Book Intro Call
-              </a>
-            </nav>
-          </div>
-        )}
-      </header>
+      <ScrollRevealInit />
+      <Header />
 
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-10">
         {/* ── Hero ── */}
@@ -759,13 +336,12 @@ export default function Home() {
             {/* Animated stat counters */}
             <div className="mt-7 grid gap-px rounded-2xl border border-slate-100 bg-slate-100 sm:grid-cols-4">
               {highlights.map((h) => (
-                <div key={h.label} className="flex flex-col items-start rounded-[inherit] bg-white px-4 py-3 first:rounded-l-2xl last:rounded-r-2xl max-sm:first:rounded-t-2xl max-sm:first:rounded-bl-none max-sm:last:rounded-b-2xl max-sm:last:rounded-tr-none">
+                <div
+                  key={h.label}
+                  className="flex flex-col items-start rounded-[inherit] bg-white px-4 py-3 first:rounded-l-2xl last:rounded-r-2xl max-sm:first:rounded-t-2xl max-sm:first:rounded-bl-none max-sm:last:rounded-b-2xl max-sm:last:rounded-tr-none"
+                >
                   <div className="font-display text-2xl font-bold tracking-tight text-slate-900">
-                    <CountUp
-                      target={h.num}
-                      suffix={h.suffix}
-                      prefix={h.prefix}
-                    />
+                    <CountUp target={h.num} suffix={h.suffix} prefix={h.prefix} />
                   </div>
                   <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">
                     {h.label}
@@ -785,7 +361,6 @@ export default function Home() {
             style={{ transitionDelay: "0.18s" }}
             className="relative flex justify-center"
           >
-            {/* Soft radial mesh behind the card */}
             <div
               className="pointer-events-none absolute inset-0 -z-10 blur-3xl"
               style={{
@@ -851,7 +426,6 @@ export default function Home() {
             Experience &amp; Impact
           </h2>
           <div className="relative mt-6">
-            {/* Vertical timeline line */}
             <div className="absolute bottom-3 left-[7px] top-3 w-px bg-blue-200" />
             <div className="space-y-6">
               {experience.map((job, i) => (
@@ -861,9 +435,7 @@ export default function Home() {
                   style={{ transitionDelay: `${i * 0.07}s` }}
                   className="relative pl-8"
                 >
-                  {/* Timeline dot */}
                   <div className="absolute left-0 top-5 h-3.5 w-3.5 rounded-full border-2 border-blue-500 bg-white" />
-
                   <div className="rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <div>
@@ -894,10 +466,7 @@ export default function Home() {
 
         {/* ── Projects ── */}
         <section id="projects" className="mb-16">
-          <div
-            className="flex items-baseline justify-between gap-2"
-            data-reveal
-          >
+          <div className="flex items-baseline justify-between gap-2" data-reveal>
             <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
               <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
               Featured Projects
@@ -906,110 +475,7 @@ export default function Home() {
               Selected AI &amp; analytics products
             </span>
           </div>
-
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            {projects.map((project, i) => (
-              <article
-                key={project.name}
-                data-reveal
-                style={{ transitionDelay: `${i * 0.08}s` }}
-                className={`flex flex-col rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-                  project.isAgent ? "border border-blue-100" : ""
-                }`}
-              >
-                <h3 className="font-display text-sm font-semibold text-slate-900">
-                  {project.name}
-                </h3>
-                <p className="mt-2 text-xs text-slate-600">
-                  {project.description}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {project.tech.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Lazy-loaded iframe preview */}
-                {project.embedUrl && (
-                  <div className="mt-4 overflow-hidden rounded-2xl bg-slate-50">
-                    {loadedPreviews[project.name] ? (
-                      <div
-                        style={{
-                          transform: project.embedScale
-                            ? `scale(${project.embedScale})`
-                            : undefined,
-                          transformOrigin: "top left",
-                          width: project.embedScale
-                            ? `${100 / project.embedScale}%`
-                            : "100%",
-                          height: project.embedHeight ?? 260,
-                        }}
-                      >
-                        <iframe
-                          src={project.embedUrl}
-                          title={`${project.name} preview`}
-                          style={{ width: "100%", height: "100%", border: "0" }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-40 flex-col items-center justify-center gap-2 px-4 text-center text-xs text-slate-500">
-                        <p>
-                          Load an interactive preview of this app inside the
-                          card, or use{" "}
-                          <span className="font-semibold text-slate-700">
-                            Live Demo
-                          </span>{" "}
-                          to open it in a new tab.
-                        </p>
-                        <button
-                          onClick={() =>
-                            setLoadedPreviews((prev) => ({
-                              ...prev,
-                              [project.name]: true,
-                            }))
-                          }
-                          className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
-                        >
-                          Load Preview
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="mt-4 flex gap-3 text-xs">
-                  <Link
-                    href={project.liveUrl}
-                    target="_blank"
-                    className={`rounded-full px-3 py-1 font-medium text-white hover:bg-blue-700 ${
-                      project.isAgent ? "bg-blue-500" : "bg-blue-600"
-                    }`}
-                  >
-                    {project.isAgent ? "Open Agent" : "Live Demo"}
-                  </Link>
-                  <Link
-                    href={project.githubUrl}
-                    target="_blank"
-                    className="rounded-full border border-slate-200 px-3 py-1 font-medium text-slate-700 hover:border-blue-400 hover:text-blue-600"
-                  >
-                    GitHub
-                  </Link>
-                </div>
-
-                {project.isAgent && (
-                  <p className="mt-2 text-[11px] text-slate-500">
-                    Tip: You can also use the floating bubble in the bottom-right
-                    corner to chat with this agent while browsing the site.
-                  </p>
-                )}
-              </article>
-            ))}
-          </div>
+          <ProjectGrid projects={projects} />
         </section>
 
         {/* ── Skills ── */}
@@ -1029,7 +495,6 @@ export default function Home() {
                 style={{ transitionDelay: `${i * 0.07}s` }}
                 className="overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
-                {/* Category accent bar */}
                 <div className="h-1" style={{ backgroundColor: cat.accent }} />
                 <div className="p-4">
                   <h3 className="font-display text-sm font-semibold text-slate-900">
@@ -1053,7 +518,6 @@ export default function Home() {
 
         {/* ── Education & Certifications ── */}
         <section id="education" className="mb-16 space-y-12">
-          {/* Education */}
           <div data-reveal>
             <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
               <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
@@ -1067,7 +531,6 @@ export default function Home() {
                   style={{ transitionDelay: `${i * 0.1}s` }}
                   className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  {/* Certificate thumbnail — click to open full cert */}
                   <a
                     href={e.certLink}
                     target="_blank"
@@ -1083,17 +546,13 @@ export default function Home() {
                       />
                     </div>
                   </a>
-
-                  {/* Card body */}
                   <div className="p-4">
                     <h3 className="font-display text-sm font-semibold text-slate-900">
                       {e.title}
                     </h3>
                     <p className="mt-0.5 text-xs text-slate-500">{e.org}</p>
                     {e.date && (
-                      <p className="mt-0.5 text-[11px] text-slate-400">
-                        {e.date}
-                      </p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">{e.date}</p>
                     )}
                     <p className="mt-2 text-xs text-slate-600">{e.detail}</p>
                   </div>
@@ -1102,7 +561,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Certifications — visual cards */}
           <div>
             <h2
               className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900"
@@ -1119,39 +577,31 @@ export default function Home() {
                   style={{ transitionDelay: `${i * 0.09}s` }}
                   className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  {/* Gradient visual header */}
                   <div
                     style={{
                       background: `linear-gradient(135deg, ${cert.colorFrom}, ${cert.colorTo})`,
                     }}
                     className="relative flex h-32 items-center justify-center overflow-hidden"
                   >
-                    {/* Watermark */}
                     <span className="absolute select-none text-[68px] font-black leading-none text-white/10">
                       {cert.initials}
                     </span>
-                    {/* Foreground initials */}
                     <span className="font-display relative text-2xl font-bold tracking-tight text-white/90">
                       {cert.initials}
                     </span>
-                    {/* Verified pill for Credly-backed certs */}
                     {cert.verified && (
                       <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
                         ✓ Verified
                       </span>
                     )}
                   </div>
-
-                  {/* Card body */}
                   <div className="flex flex-1 flex-col p-4">
                     <div>
                       <h3 className="font-display text-sm font-semibold leading-snug text-slate-900">
                         {cert.title}
                       </h3>
                       <p className="mt-1 text-xs text-slate-500">{cert.org}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">
-                        {cert.date}
-                      </p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">{cert.date}</p>
                     </div>
                     <div className="mt-auto pt-4">
                       <Link
@@ -1226,7 +676,6 @@ export default function Home() {
         </section>
       </main>
 
-      {/* Floating chatbot widget */}
       <ChatWidget />
     </div>
   );
