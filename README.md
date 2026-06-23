@@ -2,7 +2,7 @@
 
 Personal portfolio site for Sujithkumar Menon, Analytics & AI Product Manager. Built with Next.js 16, React 19, TypeScript, and Tailwind CSS v4. Deployed on Vercel.
 
-**Live site:** [personal-portfolio-v2.vercel.app](https://personal-portfolio-v2.vercel.app)
+**Live site:** [personal-portfolio-smenon2710.vercel.app](https://personal-portfolio-smenon2710.vercel.app)
 
 ---
 
@@ -16,7 +16,7 @@ Personal portfolio site for Sujithkumar Menon, Analytics & AI Product Manager. B
 | Fonts | Syne (headings) + DM Sans (body) via `next/font/google` |
 | Chat LLM | Groq — Llama 3.3 70B Versatile |
 | Lead capture | Airtable REST API |
-| Deployment | Vercel |
+| Deployment | Vercel (auto-deploys on push to `main`) |
 
 ---
 
@@ -51,13 +51,21 @@ Set the same four keys in **Vercel → Project Settings → Environment Variable
 app/
 ├── api/
 │   └── chat/
-│       └── route.ts        # Chat API: RAG-free, full-context Groq call + Airtable lead capture
-├── page.tsx                # Entire portfolio — all sections, components, and data
-├── layout.tsx              # Root layout: fonts (Syne + DM Sans), metadata
-└── globals.css             # Tailwind v4 @theme config, scroll-reveal CSS, streaming cursor
+│       └── route.ts          # Chat API: streaming Groq call + Airtable lead capture
+├── components/
+│   ├── Header.tsx            # Sticky nav with scroll-spy, progress bar, mobile menu
+│   ├── CountUp.tsx           # Animated stat counter (IntersectionObserver + RAF)
+│   ├── ProjectGrid.tsx       # Project cards with per-card iframe preview + error fallback
+│   ├── ChatWidget.tsx        # Floating chat UI with localStorage persistence
+│   └── ScrollRevealInit.tsx  # Wires up [data-reveal] IntersectionObserver on mount
+├── page.tsx                  # Server component — all data constants and static page JSX
+├── layout.tsx                # Root layout: fonts, metadata, OpenGraph/Twitter cards
+├── sitemap.ts                # Generates /sitemap.xml
+├── robots.ts                 # Generates /robots.txt
+└── globals.css               # Tailwind v4 @theme config, scroll-reveal CSS, streaming cursor
 
 data/
-└── chatbot/                # 10 markdown docs loaded as full context for the chat LLM
+└── chatbot/                  # 10 markdown docs loaded as full context for the chat LLM
     ├── 01_Personal_Information.md
     ├── 02_Career_Summary.md
     ├── 03_Technical_Skills.md
@@ -70,61 +78,41 @@ data/
     └── 10_Reach_Out.md
 
 public/
-├── sujith-profile.png       # Hero profile photo
-├── be-cert.jpg              # B.E. certificate thumbnail
-├── purdue-genai-cert.jpg    # Purdue GenAI certificate thumbnail
-├── purdue-genai-cert.pdf    # Purdue GenAI certificate (full)
-└── pm-cert.pdf              # Product Manager Certified certificate (full)
+├── sujith-profile.png                  # Hero profile photo + OpenGraph image
+├── Sujithkumar_Menon_Resume_DA_AI.pdf  # Resume (linked from hero)
+├── be-cert.jpg                         # B.E. certificate thumbnail
+├── purdue-genai-cert.jpg               # Purdue GenAI certificate thumbnail
+└── pm-cert.pdf                         # Product Manager Certified certificate
 ```
 
 ---
 
 ## Architecture
 
-The entire site is a **single client component** (`page.tsx`) with one server-side API route (`/api/chat`). All portfolio content is hardcoded as typed constants at the top of `page.tsx`.
+`page.tsx` is a **server component** — all portfolio content is rendered as static HTML on the server for fast load and full SEO indexability. Interactive features are isolated into client component islands in `app/components/`.
 
-### Key components (all inline in `page.tsx`)
+### Client components
 
 | Component | Purpose |
 |---|---|
-| `Home` | Main page — manages all state and side effects |
+| `Header` | Scroll progress bar, sticky nav, scroll-spy, mobile hamburger |
 | `CountUp` | Animates stat numbers on scroll-into-view via IntersectionObserver + RAF |
-| `ChatWidget` | Floating bottom-right native chat UI — no iframe |
+| `ProjectGrid` | Manages per-card iframe load state with 10s timeout and error fallback |
+| `ChatWidget` | Floating native chat UI — streams from `/api/chat`, persists to `localStorage` |
+| `ScrollRevealInit` | Renders `null`; sets up IntersectionObserver for `[data-reveal]` elements |
 
 ### Chat API (`app/api/chat/route.ts`)
 
-Handles all chat requests server-side:
+`POST /api/chat`
 
 1. **Extracts** name/email/purpose from messages via regex
-2. **Gates** responses — collects name + email first, then purpose, before answering questions
-3. **Records leads** to Airtable on first purpose capture
+2. **Gates** responses — collects email first, then purpose, before answering
+3. **Records** leads to Airtable on first purpose capture
 4. **Loads** all 10 docs from `data/chatbot/` as full LLM context (module-level cache)
-5. **Streams** the Groq response back as `text/plain` with `Transfer-Encoding: chunked`
+5. **Streams** the Groq response as `text/plain` chunked
 6. **Returns** updated `userInfo` in the `X-UserInfo` response header
 
-### State in `Home`
-
-| State | Purpose |
-|---|---|
-| `loadedPreviews` | Tracks which project iframe previews have been user-triggered |
-| `mobileMenuOpen` | Controls mobile hamburger nav visibility |
-| `scrollProgress` | Drives the fixed top progress bar (0–100) |
-| `activeSection` | Drives the nav scroll-spy highlight |
-
-### State in `ChatWidget`
-
-| State | Purpose |
-|---|---|
-| `messages` | Full conversation history (`ChatMessage[]`) |
-| `userInfo` | Visitor name/email/purpose collected during the chat session |
-| `loading` | True while waiting for first stream chunk — shows typing dots |
-| `streaming` | True while reading stream chunks — shows blinking cursor |
-
-### Side effects
-
-Two `useEffect` hooks in `Home`:
-1. **Scroll-reveal** — IntersectionObserver adds `.revealed` class to `[data-reveal]` elements
-2. **Scroll handler** — Passive scroll listener updates `scrollProgress` and `activeSection` together
+**Updating chatbot knowledge:** Edit the markdown files in `data/chatbot/`. Changes take effect on the next server restart or Vercel redeployment.
 
 ---
 
@@ -132,10 +120,10 @@ Two `useEffect` hooks in `Home`:
 
 | Section | ID | Notes |
 |---|---|---|
-| Hero | `#home` | 2-col grid; KPI stat counters; profile photo |
+| Hero | `#home` | 2-col grid; KPI stat counters; profile photo; Resume download |
 | About | `#about` | Bio paragraph |
 | Experience | `#experience` | 6 entries; vertical timeline with dot markers |
-| Projects | `#projects` | 5 cards; lazy-loaded iframe previews |
+| Projects | `#projects` | 5 cards; lazy-loaded iframe previews with error fallback |
 | Skills | `#skills` | 4 categories; colored accent bars |
 | Education | `#education` | 2 cert thumbnail cards (B.E. + Purdue GenAI) |
 | Certifications | `#education` | 2 visual gradient cards (Tableau + PM Certified) |
@@ -160,24 +148,12 @@ Two `useEffect` hooks in `Home`:
 
 ## Chat Widget
 
-The `ChatWidget` is a floating bubble (bottom-right) that opens a native React chat panel. It calls `/api/chat` and reads the response as a `ReadableStream`, appending tokens as they arrive.
+Floating bottom-right button opens a native React chat panel. Calls `/api/chat` and reads the response as a `ReadableStream`, appending tokens as they arrive.
 
 **Lead collection flow:**
 1. Visitor must provide name + email before questions are answered
-2. Visitor is then asked what brings them here (purpose)
+2. Visitor is asked what brings them here (purpose)
 3. On first purpose capture, lead is recorded to Airtable
-4. All subsequent messages are answered by the LLM with full profile context
+4. All subsequent messages answered by the LLM with full profile context
 
-**Updating the chatbot's knowledge:** Edit the markdown files in `data/chatbot/`. Changes take effect on the next server restart (the context is module-level cached).
-
----
-
-## Certificates & Assets
-
-| File | Linked from |
-|---|---|
-| `/be-cert.jpg` | Education — B.E. card thumbnail; click opens full image |
-| `/purdue-genai-cert.jpg` | Education — Purdue GenAI card thumbnail |
-| `/purdue-genai-cert.pdf` | Education — Purdue GenAI card; click opens full PDF |
-| `/pm-cert.pdf` | Certifications — Product Manager card; click opens full PDF |
-| Credly badge | Certifications — Tableau card links to Credly for verification |
+**Persistence:** Conversation history and user info are saved to `localStorage` under the key `digital-twin-chat`. A trash icon in the chat header clears the history.
