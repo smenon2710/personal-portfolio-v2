@@ -747,6 +747,13 @@ export default function Home() {
               >
                 GitHub
               </Link>
+              <a
+                href="/Sujithkumar_Menon_Resume_DA_AI.pdf"
+                download
+                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-medium text-slate-700 hover:border-blue-400 hover:text-blue-600"
+              >
+                ↓ Resume
+              </a>
             </div>
 
             {/* Animated stat counters */}
