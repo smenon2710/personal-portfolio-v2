@@ -331,47 +331,198 @@ function CountUp({
 }
 
 // ── ChatWidget ─────────────────────────────────────────────────────────────────
+type ChatMessage = { role: "user" | "assistant"; content: string };
+type UserInfo = { name?: string; email?: string; purpose?: string };
+
+const INITIAL_GREETING =
+  "Hi! I'm Sujith's Digital Twin. I'd love to help you learn about his background and experience. Could you please share your name and email address first?";
+
 function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [userInfo, setUserInfo] = useState<UserInfo>({});
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Show greeting on first open
+  useEffect(() => {
+    if (open && messages.length === 0) {
+      setMessages([{ role: "assistant", content: INITIAL_GREETING }]);
+    }
+  }, [open, messages.length]);
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  async function send() {
+    const text = input.trim();
+    if (!text || loading || streaming) return;
+    setInput("");
+    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: messages, userInfo }),
+      });
+
+      const newUserInfo = JSON.parse(res.headers.get("X-UserInfo") ?? "{}");
+      setUserInfo(newUserInfo);
+
+      if (!res.body) throw new Error("No response body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      setLoading(false);
+      setStreaming(true);
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          return [
+            ...updated.slice(0, -1),
+            { ...last, content: last.content + chunk },
+          ];
+        });
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Something went wrong. Please try again." },
+      ]);
+    } finally {
+      setLoading(false);
+      setStreaming(false);
+    }
+  }
+
+  const busy = loading || streaming;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
       {open && (
-        <div className="mb-3 w-[360px] max-w-[95vw] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-            <div>
-              <p className="font-display text-sm font-semibold text-slate-900">
-                Chat with Sujith
-              </p>
-              <p className="text-xs text-slate-500">Sujith&apos;s Digital Twin</p>
+        <div
+          className="mb-3 flex w-[360px] max-w-[95vw] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_8px_40px_rgba(15,23,42,0.12)]"
+          style={{ height: "520px" }}
+        >
+          {/* Header */}
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-slate-50/60 px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
+                SM
+              </div>
+              <div>
+                <p className="font-display text-sm font-semibold leading-none text-slate-900">
+                  Sujith&apos;s Digital Twin
+                </p>
+                <p className="mt-0.5 text-[10px] text-slate-400">
+                  AI · Analytics PM · BI
+                </p>
+              </div>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+              className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
               aria-label="Close chat"
             >
-              ✕
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </button>
           </div>
-          <div className="h-[655px] w-full">
-            <iframe
-              src="https://smenon2710-sujith-chatbot.hf.space"
-              title="Chat with Sujith"
-              className="h-full w-full border-0"
-              allow="clipboard-read; clipboard-write; microphone"
-            />
+
+          {/* Messages */}
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            {messages.map((msg, i) => {
+              const isLastAssistant =
+                streaming && i === messages.length - 1 && msg.role === "assistant";
+              return (
+                <div
+                  key={i}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[84%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                      msg.role === "user"
+                        ? "rounded-br-sm bg-blue-600 text-white"
+                        : `rounded-bl-sm bg-slate-100 text-slate-800 ${isLastAssistant ? "streaming-cursor" : ""}`
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              );
+            })}
+
+            {loading && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl rounded-bl-sm bg-slate-100 px-3.5 py-3">
+                  <span className="flex gap-1">
+                    {[0, 160, 320].map((delay) => (
+                      <span
+                        key={delay}
+                        className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
+                        style={{ animationDelay: `${delay}ms` }}
+                      />
+                    ))}
+                  </span>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
           </div>
-          <div className="border-t border-slate-200 bg-slate-50 px-4 py-2 text-center text-[11px] text-slate-400">
-            Powered by Hugging Face · AI agent tuned on my profile
+
+          {/* Input */}
+          <div className="shrink-0 border-t border-slate-100 p-3">
+            <div className="flex gap-2">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
+                placeholder="Ask me anything…"
+                disabled={busy}
+                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-[13px] text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50"
+              />
+              <button
+                onClick={send}
+                disabled={busy || !input.trim()}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:opacity-40"
+                aria-label="Send"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M13 1L1 5.5l5 1.5L7.5 13 13 1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="shrink-0 border-t border-slate-100 bg-slate-50/60 px-4 py-2 text-center text-[10px] text-slate-400">
+            Powered by Groq · Llama 3.3 70B
           </div>
         </div>
       )}
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-700"
+        className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-colors hover:bg-blue-700"
       >
-        💬 Chat with my Digital Twin
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1C3.686 1 1 3.238 1 6c0 1.657.9 3.134 2.3 4.1L3 13l2.8-1.4A7.5 7.5 0 007 11c3.314 0 6-2.238 6-5s-2.686-5-6-5z" fill="currentColor"/>
+        </svg>
+        Chat with my Digital Twin
       </button>
     </div>
   );
@@ -554,10 +705,10 @@ export default function Home() {
             style={{ transitionDelay: "0.05s" }}
             className="rounded-3xl bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
           >
-            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-blue-600">
-              <span>🏠</span> Home
-            </div>
-            <h1 className="font-display mb-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Analytics · BI · Generative AI
+            </p>
+            <h1 className="font-display mb-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
               Analytics Product Manager | BI, GenAI &amp; Data Platforms
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-slate-600 sm:text-[15px]">
@@ -571,9 +722,9 @@ export default function Home() {
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link
                 href="#contact"
-                className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/40 hover:bg-blue-700"
+                className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/30 hover:bg-blue-700"
               >
-                📩 Connect With Me
+                Connect With Me
               </Link>
               <Link
                 href="https://calendar.app.google/7fvRq224455C7kNS8"
@@ -599,17 +750,17 @@ export default function Home() {
             </div>
 
             {/* Animated stat counters */}
-            <div className="mt-7 grid gap-3 rounded-2xl bg-slate-50 p-4 sm:grid-cols-4">
+            <div className="mt-7 grid gap-px rounded-2xl border border-slate-100 bg-slate-100 sm:grid-cols-4">
               {highlights.map((h) => (
-                <div key={h.label} className="text-center sm:text-left">
-                  <div className="font-display text-lg font-semibold text-blue-600">
+                <div key={h.label} className="flex flex-col items-start rounded-[inherit] bg-white px-4 py-3 first:rounded-l-2xl last:rounded-r-2xl max-sm:first:rounded-t-2xl max-sm:first:rounded-bl-none max-sm:last:rounded-b-2xl max-sm:last:rounded-tr-none">
+                  <div className="font-display text-2xl font-bold tracking-tight text-slate-900">
                     <CountUp
                       target={h.num}
                       suffix={h.suffix}
                       prefix={h.prefix}
                     />
                   </div>
-                  <div className="mt-1 text-[11px] font-medium text-slate-500">
+                  <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">
                     {h.label}
                   </div>
                 </div>
@@ -667,7 +818,8 @@ export default function Home() {
 
         {/* ── About ── */}
         <section id="about" className="mb-16" data-reveal>
-          <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
+          <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
+            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
             About Me
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
@@ -685,9 +837,10 @@ export default function Home() {
         {/* ── Experience ── */}
         <section id="experience" className="mb-16">
           <h2
-            className="font-display text-xl font-semibold tracking-tight text-slate-900"
+            className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900"
             data-reveal
           >
+            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
             Experience &amp; Impact
           </h2>
           <div className="relative mt-6">
@@ -738,7 +891,8 @@ export default function Home() {
             className="flex items-baseline justify-between gap-2"
             data-reveal
           >
-            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
+            <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
+              <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
               Featured Projects
             </h2>
             <span className="text-xs text-slate-500">
@@ -814,7 +968,7 @@ export default function Home() {
                           }
                           className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
                         >
-                          🔍 Load Preview
+                          Load Preview
                         </button>
                       </div>
                     )}
@@ -854,9 +1008,10 @@ export default function Home() {
         {/* ── Skills ── */}
         <section id="skills" className="mb-16">
           <h2
-            className="font-display text-xl font-semibold tracking-tight text-slate-900"
+            className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900"
             data-reveal
           >
+            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
             Skills &amp; Tooling
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -877,7 +1032,7 @@ export default function Home() {
                     {cat.items.map((item) => (
                       <span
                         key={item}
-                        className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                        className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600"
                       >
                         {item}
                       </span>
@@ -893,7 +1048,8 @@ export default function Home() {
         <section id="education" className="mb-16 space-y-12">
           {/* Education */}
           <div data-reveal>
-            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
+            <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
+              <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
               Education
             </h2>
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -942,9 +1098,10 @@ export default function Home() {
           {/* Certifications — visual cards */}
           <div>
             <h2
-              className="font-display text-xl font-semibold tracking-tight text-slate-900"
+              className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900"
               data-reveal
             >
+              <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
               Certifications &amp; Training
             </h2>
             <div className="mt-6 grid gap-5 sm:grid-cols-3">
@@ -1007,7 +1164,8 @@ export default function Home() {
 
         {/* ── Contact ── */}
         <section id="contact" data-reveal>
-          <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
+          <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
+            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
             Let&apos;s Connect
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-slate-600">
