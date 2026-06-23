@@ -118,7 +118,7 @@ const projects: Project[] = [
     embedUrl: "https://restobot.vercel.app",
     embedScale: 1,
     embedHeight: 320,
-    githubUrl: "https://github.com/smenon2710",
+    githubUrl: "https://github.com/smenon2710/restobot",
   },
   {
     name: "GenAI SQL Assistant",
@@ -130,7 +130,7 @@ const projects: Project[] = [
       "https://agspurdue-e4xbcubsa45ww4cv5qmrnz.streamlit.app/?embedded=true",
     embedScale: 0.8,
     embedHeight: 320,
-    githubUrl: "https://github.com/smenon2710",
+    githubUrl: "https://github.com/smenon2710/AGS_Purdue/tree/main/nl2insights",
   },
   {
     name: "InsightMate – AI-Powered Data Exploration",
@@ -141,7 +141,7 @@ const projects: Project[] = [
     embedUrl: "https://ags-purdue-insightmate.streamlit.app/?embedded=true",
     embedScale: 0.7,
     embedHeight: 320,
-    githubUrl: "https://github.com/smenon2710",
+    githubUrl: "https://github.com/smenon2710/AGS_Purdue/tree/main/auto_bi_plus",
   },
   {
     name: "AI Stock Analyzer",
@@ -153,7 +153,7 @@ const projects: Project[] = [
       "https://ai-financial-analyst-smenon2710.streamlit.app/?embedded=true",
     embedScale: 0.7,
     embedHeight: 320,
-    githubUrl: "https://github.com/smenon2710",
+    githubUrl: "https://github.com/smenon2710/ai-financial-analyst",
   },
   {
     name: "Sujith's Digital Twin – AI Portfolio Agent",
@@ -164,7 +164,7 @@ const projects: Project[] = [
     embedUrl: "https://smenon2710-sujith-chatbot.hf.space",
     embedScale: 0.8,
     embedHeight: 320,
-    githubUrl: "https://github.com/smenon2710",
+    githubUrl: "https://github.com/smenon2710/twin",
     isAgent: true,
   },
 ];
