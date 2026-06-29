@@ -1,5 +1,55 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
+
+function renderInline(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/).map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("*") && part.endsWith("*"))
+      return <em key={i}>{part.slice(1, -1)}</em>;
+    return part;
+  });
+}
+
+function renderMarkdown(text: string): ReactNode {
+  const lines = text.split("\n");
+  const out: ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^[-*] /.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-*] /.test(lines[i]))
+        items.push(lines[i++].slice(2));
+      out.push(
+        <ul key={i} className="my-1 list-disc space-y-0.5 pl-4">
+          {items.map((it, j) => <li key={j}>{renderInline(it)}</li>)}
+        </ul>
+      );
+      continue;
+    }
+    if (/^\d+\. /.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i]))
+        items.push(lines[i++].replace(/^\d+\. /, ""));
+      out.push(
+        <ol key={i} className="my-1 list-decimal space-y-0.5 pl-4">
+          {items.map((it, j) => <li key={j}>{renderInline(it)}</li>)}
+        </ol>
+      );
+      continue;
+    }
+    if (/^#{1,3} /.test(line)) {
+      out.push(<p key={i} className="font-semibold">{renderInline(line.replace(/^#{1,3} /, ""))}</p>);
+      i++;
+      continue;
+    }
+    if (line.trim() === "") { i++; continue; }
+    out.push(<p key={i}>{renderInline(line)}</p>);
+    i++;
+  }
+  return <div className="space-y-1">{out}</div>;
+}
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 type UserInfo = { name?: string; email?: string; purpose?: string };
@@ -166,7 +216,7 @@ export default function ChatWidget() {
                         : `rounded-bl-sm bg-slate-100 text-slate-800 ${isLastAssistant ? "streaming-cursor" : ""}`
                     }`}
                   >
-                    {msg.content}
+                    {msg.role === "user" ? msg.content : renderMarkdown(msg.content)}
                   </div>
                 </div>
               );
@@ -216,7 +266,7 @@ export default function ChatWidget() {
 
           {/* Footer */}
           <div className="shrink-0 border-t border-slate-100 bg-slate-50/60 px-4 py-2 text-center text-[10px] text-slate-400">
-            Powered by Groq · Llama 3.3 70B
+            Powered by Groq · GPT OSS 120B
           </div>
         </div>
       )}
