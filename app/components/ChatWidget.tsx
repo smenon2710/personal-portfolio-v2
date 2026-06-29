@@ -18,25 +18,24 @@ export default function ChatWidget() {
   const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Restore persisted chat on mount
+  // Restore persisted userInfo on mount (not messages — always start fresh)
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        const { messages: m, userInfo: u } = JSON.parse(saved);
-        if (m?.length) setMessages(m);
+        const { userInfo: u } = JSON.parse(saved);
         if (u) setUserInfo(u);
       }
     } catch {}
   }, []);
 
-  // Persist on every change
+  // Persist userInfo on every change
   useEffect(() => {
-    if (messages.length === 0 && Object.keys(userInfo).length === 0) return;
+    if (Object.keys(userInfo).length === 0) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, userInfo }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ userInfo }));
     } catch {}
-  }, [messages, userInfo]);
+  }, [userInfo]);
 
   // Show greeting on first open if no history
   useEffect(() => {
