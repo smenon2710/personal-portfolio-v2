@@ -6,16 +6,27 @@ import ProjectGrid from "./components/ProjectGrid";
 import ChatWidget from "./components/ChatWidget";
 import ScrollRevealInit from "./components/ScrollRevealInit";
 import type { Project } from "./components/ProjectGrid";
+import {
+  getHighlights,
+  getExperience,
+  getProjects,
+  getSkillCategories,
+  getEducation,
+  getCertifications,
+  getContact,
+} from "./lib/airtable";
 
-// ── Static data ────────────────────────────────────────────────────────────────
-const highlights = [
+export const revalidate = 60;
+
+// ── Static fallbacks (used when Airtable tables are not yet populated) ──────────
+const FALLBACK_HIGHLIGHTS = [
   { label: "Years of Experience", num: 14, suffix: "+", prefix: "" },
   { label: "Efficiency Gains", num: 60, suffix: "%", prefix: "up to " },
   { label: "User Adoption Increase", num: 35, suffix: "%", prefix: "" },
   { label: "On-time Delivery", num: 100, suffix: "%", prefix: "" },
 ];
 
-const experience = [
+const FALLBACK_EXPERIENCE = [
   {
     company: "Self Employed & Personal Projects",
     role: "Product Manager & AI Developer",
@@ -88,7 +99,7 @@ const experience = [
   },
 ];
 
-const projects: Project[] = [
+const FALLBACK_PROJECTS: Project[] = [
   {
     name: "Restobot – AI Restaurant Assistant",
     description:
@@ -149,7 +160,7 @@ const projects: Project[] = [
   },
 ];
 
-const skillCategories = [
+const FALLBACK_SKILL_CATEGORIES = [
   {
     title: "Product Management",
     accent: "#3b82f6",
@@ -210,7 +221,7 @@ const skillCategories = [
   },
 ];
 
-const education = [
+const FALLBACK_EDUCATION = [
   {
     title: "B.E., Information Technology",
     org: "Pimpri Chinchwad College of Engineering",
@@ -231,7 +242,7 @@ const education = [
   },
 ];
 
-const certifications = [
+const FALLBACK_CERTIFICATIONS = [
   {
     title: "Tableau Certified Data Analyst",
     org: "Tableau",
@@ -256,7 +267,7 @@ const certifications = [
   },
 ];
 
-const CONTACT = {
+const FALLBACK_CONTACT = {
   location: "New York City Metropolitan Area",
   email: "sujithkumar.v.menon@gmail.com",
   linkedin: "https://www.linkedin.com/in/sujithkumar-menon/",
@@ -264,7 +275,33 @@ const CONTACT = {
 };
 
 // ── Page ───────────────────────────────────────────────────────────────────────
-export default function Home() {
+export default async function Home() {
+  const [
+    hlData,
+    expData,
+    projData,
+    skillData,
+    eduData,
+    certData,
+    contactData,
+  ] = await Promise.all([
+    getHighlights(),
+    getExperience(),
+    getProjects(),
+    getSkillCategories(),
+    getEducation(),
+    getCertifications(),
+    getContact(),
+  ]);
+
+  const highlights = hlData ?? FALLBACK_HIGHLIGHTS;
+  const experience = expData ?? FALLBACK_EXPERIENCE;
+  const projects: Project[] = (projData ?? FALLBACK_PROJECTS) as Project[];
+  const skillCategories = skillData ?? FALLBACK_SKILL_CATEGORIES;
+  const education = eduData ?? FALLBACK_EDUCATION;
+  const certifications = certData ?? FALLBACK_CERTIFICATIONS;
+  const CONTACT = contactData ?? FALLBACK_CONTACT;
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <ScrollRevealInit />
