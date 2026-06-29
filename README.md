@@ -14,7 +14,8 @@ Personal portfolio site for Sujithkumar Menon, Analytics & AI Product Manager. B
 | UI | React 19, TypeScript 5 |
 | Styling | Tailwind CSS v4 (PostCSS, no config file) |
 | Fonts | Syne (headings) + DM Sans (body) via `next/font/google` |
-| Chat LLM | Groq — Llama 3.3 70B Versatile |
+| CMS | Airtable — all portfolio content editable without code |
+| Chat LLM | Groq — GPT OSS 120B (`openai/gpt-oss-120b`) |
 | Lead capture | Airtable REST API |
 | Deployment | Vercel (auto-deploys on push to `main`) |
 
@@ -36,12 +37,14 @@ Create `.env.local` at the project root (gitignored):
 
 ```env
 GROQ_API_KEY=...          # https://console.groq.com
-AIRTABLE_API_KEY=...
+AIRTABLE_API_KEY=...      # https://airtable.com/create/tokens
 AIRTABLE_BASE_ID=...
 AIRTABLE_TABLE_NAME=Leads
 ```
 
-Set the same four keys in **Vercel → Project Settings → Environment Variables** before deploying.
+The Airtable token needs these scopes: `data.records:read`, `data.records:write`, `schema.bases:write`.
+
+Set the same keys in **Vercel → Project Settings → Environment Variables** before deploying.
 
 ---
 
@@ -55,10 +58,13 @@ app/
 ├── components/
 │   ├── Header.tsx            # Sticky nav with scroll-spy, progress bar, mobile menu
 │   ├── CountUp.tsx           # Animated stat counter (IntersectionObserver + RAF)
+│   ├── Markdown.tsx          # Shared markdown renderer (bold, lists, headings)
 │   ├── ProjectGrid.tsx       # Project cards with per-card iframe preview + error fallback
 │   ├── ChatWidget.tsx        # Floating chat UI with localStorage persistence
 │   └── ScrollRevealInit.tsx  # Wires up [data-reveal] IntersectionObserver on mount
-├── page.tsx                  # Server component — all data constants and static page JSX
+├── lib/
+│   └── airtable.ts           # Typed fetchers for all 7 portfolio content tables
+├── page.tsx                  # Async server component — fetches Airtable data + static fallbacks
 ├── layout.tsx                # Root layout: fonts, metadata, OpenGraph/Twitter cards
 ├── sitemap.ts                # Generates /sitemap.xml
 ├── robots.ts                 # Generates /robots.txt
@@ -89,7 +95,7 @@ public/
 
 ## Architecture
 
-`page.tsx` is a **server component** — all portfolio content is rendered as static HTML on the server for fast load and full SEO indexability. Interactive features are isolated into client component islands in `app/components/`.
+`page.tsx` is an **async server component** that fetches all content from Airtable at request time with 60-second ISR revalidation. If any Airtable table is unreachable or empty, it silently falls back to the hardcoded static data in the same file. Interactive features are isolated as client component islands in `app/components/`.
 
 ### Client components
 
@@ -97,9 +103,29 @@ public/
 |---|---|
 | `Header` | Scroll progress bar, sticky nav, scroll-spy, mobile hamburger |
 | `CountUp` | Animates stat numbers on scroll-into-view via IntersectionObserver + RAF |
+| `Markdown` | Renders Airtable/LLM markdown — bold, italic, bullet lists, numbered lists, headings |
 | `ProjectGrid` | Manages per-card iframe load state with 10s timeout and error fallback |
 | `ChatWidget` | Floating native chat UI — streams from `/api/chat`, persists to `localStorage` |
 | `ScrollRevealInit` | Renders `null`; sets up IntersectionObserver for `[data-reveal]` elements |
+
+### Content CMS (Airtable)
+
+All portfolio content is stored in Airtable and fetched by `app/lib/airtable.ts`. The page revalidates every 60 seconds — edit a cell in Airtable and the live site reflects it within a minute, no code changes needed.
+
+| Table | Records | Key fields |
+|---|---|---|
+| `Highlights` | 4 | Label, Num, Suffix, Prefix, Sort |
+| `Experience` | 6 | Company, Role, Location, Period, Bullets, Sort |
+| `Projects` | 5 | Name, Description, Tech, LiveUrl, EmbedUrl, EmbedScale, EmbedHeight, GithubUrl, IsAgent, Sort |
+| `Skills` | 4 | Title, Accent, Items, Sort |
+| `Education` | 2 | Title, Org, Date, Detail, CertImage, CertLink, Sort |
+| `Certifications` | 2 | Title, Org, Date, ColorFrom, ColorTo, Initials, Link, LinkLabel, Verified, Sort |
+| `Contact` | 1 | Location, Email, LinkedIn, GitHub |
+
+**Experience.Bullets** — plain long text, one bullet per line (no markdown syntax needed).  
+**Skills.Items** — plain long text, one skill per line.  
+**Projects.Tech** — single line text, comma-separated (e.g. `GPT-4, Streamlit, Python`).  
+**Sort** — number field controlling display order; lower number = appears first.
 
 ### Chat API (`app/api/chat/route.ts`)
 
@@ -109,7 +135,7 @@ public/
 2. **Gates** responses — collects email first, then purpose, before answering
 3. **Records** leads to Airtable on first purpose capture
 4. **Loads** all 10 docs from `data/chatbot/` as full LLM context (module-level cache)
-5. **Streams** the Groq response as `text/plain` chunked
+5. **Streams** the Groq `openai/gpt-oss-120b` response as `text/plain` chunked
 6. **Returns** updated `userInfo` in the `X-UserInfo` response header
 
 **Updating chatbot knowledge:** Edit the markdown files in `data/chatbot/`. Changes take effect on the next server restart or Vercel redeployment.
@@ -148,7 +174,7 @@ public/
 
 ## Chat Widget
 
-Floating bottom-right button opens a native React chat panel. Calls `/api/chat` and reads the response as a `ReadableStream`, appending tokens as they arrive.
+Floating bottom-right button opens a native React chat panel. Calls `/api/chat` and reads the response as a `ReadableStream`, appending tokens as they arrive. Responses are rendered through the shared `Markdown` component.
 
 **Lead collection flow:**
 1. Visitor must provide name + email before questions are answered

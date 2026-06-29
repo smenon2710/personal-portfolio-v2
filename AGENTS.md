@@ -41,10 +41,13 @@ app/
 ├── components/
 │   ├── Header.tsx            # "use client" — scroll progress bar, sticky nav, scroll-spy, mobile menu
 │   ├── CountUp.tsx           # "use client" — animated stat counter
+│   ├── Markdown.tsx          # Shared renderer — bold, italic, bullet/numbered lists, headings
 │   ├── ProjectGrid.tsx       # "use client" — project cards with iframe load state + error fallback
 │   ├── ChatWidget.tsx        # "use client" — floating chat UI with localStorage persistence
 │   └── ScrollRevealInit.tsx  # "use client" — wires up [data-reveal] IntersectionObserver, renders null
-├── page.tsx                  # Server component — data constants + static page JSX
+├── lib/
+│   └── airtable.ts           # Typed fetchers for all 7 portfolio content tables (60s ISR cache)
+├── page.tsx                  # Async server component — fetches Airtable data, falls back to static constants
 ├── layout.tsx                # Root layout: fonts, metadata, OpenGraph/Twitter cards
 ├── sitemap.ts                # Generates /sitemap.xml
 ├── robots.ts                 # Generates /robots.txt
@@ -79,16 +82,21 @@ Required in `.env.local` (gitignored) and Vercel project settings:
 
 ```env
 GROQ_API_KEY=...          # https://console.groq.com
-AIRTABLE_API_KEY=...
+AIRTABLE_API_KEY=...      # https://airtable.com/create/tokens
 AIRTABLE_BASE_ID=...
 AIRTABLE_TABLE_NAME=Leads
 ```
+
+The Airtable personal access token requires these scopes:
+- `data.records:read` — page fetches portfolio content
+- `data.records:write` — chat route writes leads
+- `schema.bases:write` — only needed if recreating tables from scratch
 
 ---
 
 ## Architecture
 
-`page.tsx` is a **server component**. All portfolio content is rendered as static HTML. Interactive features live in `app/components/` as client islands.
+`page.tsx` is an **async server component** with `export const revalidate = 60`. It fetches all content from Airtable in a single `Promise.all` at request time. If any table returns empty (not yet set up, or Airtable unreachable), it falls back silently to the hardcoded `FALLBACK_*` constants at the top of the file.
 
 ### Key Conventions
 
@@ -137,6 +145,48 @@ Blue (`blue-600` / `#2563EB`) is reserved for primary actions and section headin
 
 ---
 
+## Airtable CMS (`app/lib/airtable.ts`)
+
+All portfolio content is editable via Airtable — no code changes needed. The page revalidates every 60 seconds.
+
+### Tables
+
+| Table | Records | Sort field |
+|---|---|---|
+| `Highlights` | 4 | Sort (Number) |
+| `Experience` | 6 | Sort (Number) |
+| `Projects` | 5 | Sort (Number) |
+| `Skills` | 4 | Sort (Number) |
+| `Education` | 2 | Sort (Number) |
+| `Certifications` | 2 | Sort (Number) |
+| `Contact` | 1 | — |
+
+### Field conventions
+
+- **Experience.Bullets** — plain long text, one bullet per line. No markdown syntax.
+- **Skills.Items** — plain long text, one skill per line.
+- **Projects.Tech** — single line text, comma-separated (`GPT-4, Streamlit, Python`).
+- **Sort** — controls display order; lower number = shown first.
+- **Certifications.ColorFrom / ColorTo** — hex colors for the gradient banner (`#1e3a5f`).
+
+### Adding content
+
+**New experience entry** — add a row to the `Experience` table. Set `Sort` to place it in the timeline.
+
+**New project** — add a row to `Projects`. Set `IsAgent` checkbox if it's an AI agent (changes button label and adds blue border).
+
+**New certification** — add a row to `Certifications` with `ColorFrom`, `ColorTo`, `Initials`, `Link`, `LinkLabel`. Set `Verified` checkbox for Credly-verified badges.
+
+**New skill category** — add a row to `Skills` with the `Accent` hex color and `Items` (one per line).
+
+**New education entry** — add a row to `Education` with `CertImage` (public path like `/be-cert.jpg`) and `CertLink`.
+
+**Update contact info** — edit the single row in `Contact`.
+
+**Update chatbot knowledge** — edit `.md` files in `data/chatbot/`. Restart dev server or redeploy to Vercel to pick up changes.
+
+---
+
 ## Chat API (`app/api/chat/route.ts`)
 
 `POST /api/chat`
@@ -157,9 +207,7 @@ Blue (`blue-600` / `#2563EB`) is reserved for primary actions and section headin
 4. Gate 2 — if no purpose: stream "what brings you here?", return
 5. Record to Airtable once (`!incoming.purpose && userInfo.purpose`)
 6. Load all docs from `data/chatbot/` (module-level cache, reloads on cold start)
-7. Stream Groq `llama-3.3-70b-versatile` response with full docs as context
-
-**Updating chatbot knowledge:** Edit the markdown files in `data/chatbot/`. Restart dev server or redeploy to pick up changes.
+7. Stream Groq `openai/gpt-oss-120b` response with full docs as context
 
 ---
 
@@ -176,11 +224,28 @@ State:
 
 **localStorage persistence:** On mount, restores `messages` and `userInfo` from `localStorage` key `digital-twin-chat`. Saves on every change. A clear-chat button in the header wipes the key.
 
+**Markdown rendering:** Assistant messages are rendered through the shared `Markdown` component (`app/components/Markdown.tsx`), which handles bold, italic, bullet lists, numbered lists, and headings.
+
 Streaming pattern:
 1. `POST /api/chat` → read `X-UserInfo` header → `setUserInfo(newUserInfo)`
 2. Add empty assistant message → read `res.body` as `ReadableStream`
 3. Append decoded chunks to last message in state until stream closes
 4. `streaming = false` → cursor disappears
+
+---
+
+## Markdown Component (`app/components/Markdown.tsx`)
+
+Shared zero-dependency markdown renderer. Used by `ChatWidget` for LLM responses. Can be used in `page.tsx` for any Airtable rich-text field.
+
+Handles:
+- `**bold**` / `*italic*` — inline
+- `- item` / `* item` — unordered lists
+- `1. item` — ordered lists
+- `## Heading` — rendered as semibold paragraph
+- Plain paragraphs and blank line separation
+
+Import as a component or use the exported `renderMarkdown(text)` function directly.
 
 ---
 
@@ -196,30 +261,13 @@ On "Load Preview" click: transitions to `loading`, starts a 10-second timeout. `
 
 ---
 
-## Content data (all in `page.tsx`)
+## Content data
 
-| Constant | Type | Contents |
-|---|---|---|
-| `highlights` | array | Hero KPI stat counters (num, suffix, prefix, label) |
-| `experience` | array | 6 jobs: company, role, location, period, bullets |
-| `projects` | `Project[]` | 5 projects: name, description, tech, URLs, embedScale |
-| `skillCategories` | array | 4 categories with accent hex color and items |
-| `education` | array | 2 entries with certImage and certLink |
-| `certifications` | array | 2 entries with gradient colors, Credly/PDF links |
-| `CONTACT` | object | location, email, linkedin, github |
+All content lives in Airtable. `page.tsx` contains `FALLBACK_*` constants (identical to the original static data) used when Airtable tables are empty or unreachable.
 
-Note: `navItems` lives in `Header.tsx` (not `page.tsx`) since it is only used by the header client component.
+| Source | Used when |
+|---|---|
+| Airtable table has rows | Normal operation |
+| Airtable table empty / unreachable | Falls back to `FALLBACK_*` in `page.tsx` |
 
----
-
-## Adding content
-
-**New experience entry** — append to `experience` array in `page.tsx` with `company`, `role`, `location`, `period`, `bullets[]`.
-
-**New project** — append to `projects: Project[]` in `page.tsx`. Set `isAgent: true` for AI agent projects (changes button label to "Open Agent", adds blue border + tip text).
-
-**New certification** — append to `certifications` with `colorFrom`, `colorTo`, `initials`, `link`, `linkLabel`, `verified`.
-
-**New education entry** — append to `education` with `certImage` (path in `public/`) and `certLink` (image or PDF path).
-
-**Update chatbot knowledge** — edit or add `.md` files in `data/chatbot/`. Restart dev server or redeploy to Vercel to pick up changes.
+Note: `navItems` lives in `Header.tsx` (not Airtable) since it is only used by the header client component and changes require a redeployment regardless.
