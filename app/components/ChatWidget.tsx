@@ -5,7 +5,6 @@ import Markdown from "./Markdown";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 type UserInfo = { name?: string; email?: string; purpose?: string };
 
-const STORAGE_KEY = "digital-twin-chat";
 const INITIAL_GREETING =
   "Hi! I'm Sujith's Digital Twin. I'd love to help you learn about his background and experience. Could you please share your name and email address first?";
 
@@ -17,25 +16,6 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-
-  // Restore persisted userInfo on mount (not messages — always start fresh)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const { userInfo: u } = JSON.parse(saved);
-        if (u) setUserInfo(u);
-      }
-    } catch {}
-  }, []);
-
-  // Persist userInfo on every change
-  useEffect(() => {
-    if (Object.keys(userInfo).length === 0) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ userInfo }));
-    } catch {}
-  }, [userInfo]);
 
   // Show greeting on first open if no history
   useEffect(() => {
@@ -99,7 +79,6 @@ export default function ChatWidget() {
   function clearChat() {
     setMessages([]);
     setUserInfo({});
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
   }
 
   const busy = loading || streaming;
