@@ -105,7 +105,7 @@ public/
 | `CountUp` | Animates stat numbers on scroll-into-view via IntersectionObserver + RAF |
 | `Markdown` | Renders Airtable/LLM markdown — bold, italic, bullet lists, numbered lists, headings |
 | `ProjectGrid` | Manages per-card iframe load state with 10s timeout and error fallback |
-| `ChatWidget` | Floating native chat UI — streams from `/api/chat`, persists to `localStorage` |
+| `ChatWidget` | Floating native chat UI — streams from `/api/chat`, stateless (no localStorage) |
 | `ScrollRevealInit` | Renders `null`; sets up IntersectionObserver for `[data-reveal]` elements |
 
 ### Content CMS (Airtable)
@@ -182,4 +182,4 @@ Floating bottom-right button opens a native React chat panel. Calls `/api/chat` 
 3. On first purpose capture, lead is recorded to Airtable
 4. All subsequent messages answered by the LLM with full profile context
 
-**Persistence:** Conversation history and user info are saved to `localStorage` under the key `digital-twin-chat`. A trash icon in the chat header clears the history.
+**Persistence:** None — the widget is fully stateless. Every page load starts a fresh session so the email, purpose, and Airtable lead-capture gates always run. The trash icon in the chat header resets the in-memory conversation within the current session.

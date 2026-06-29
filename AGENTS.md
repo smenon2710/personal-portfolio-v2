@@ -43,7 +43,7 @@ app/
 │   ├── CountUp.tsx           # "use client" — animated stat counter
 │   ├── Markdown.tsx          # Shared renderer — bold, italic, bullet/numbered lists, headings
 │   ├── ProjectGrid.tsx       # "use client" — project cards with iframe load state + error fallback
-│   ├── ChatWidget.tsx        # "use client" — floating chat UI with localStorage persistence
+│   ├── ChatWidget.tsx        # "use client" — floating chat UI, stateless (no localStorage)
 │   └── ScrollRevealInit.tsx  # "use client" — wires up [data-reveal] IntersectionObserver, renders null
 ├── lib/
 │   └── airtable.ts           # Typed fetchers for all 7 portfolio content tables (60s ISR cache)
@@ -222,7 +222,7 @@ State:
 | `loading` | `boolean` | True while awaiting first chunk — shows typing dots |
 | `streaming` | `boolean` | True while reading stream — shows `.streaming-cursor` on last message |
 
-**localStorage persistence:** On mount, restores `messages` and `userInfo` from `localStorage` key `digital-twin-chat`. Saves on every change. A clear-chat button in the header wipes the key.
+**Persistence:** None — fully stateless. Every page load starts a fresh session, ensuring the email gate, purpose gate, and Airtable lead-capture always run. The clear-chat button in the header resets in-memory state within the current session.
 
 **Markdown rendering:** Assistant messages are rendered through the shared `Markdown` component (`app/components/Markdown.tsx`), which handles bold, italic, bullet lists, numbered lists, and headings.
 
