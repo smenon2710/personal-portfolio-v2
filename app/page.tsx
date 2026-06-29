@@ -303,412 +303,393 @@ export default async function Home() {
   const CONTACT = contactData ?? FALLBACK_CONTACT;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-paper text-ink">
       <ScrollRevealInit />
       <Header />
 
-      <main className="mx-auto max-w-6xl px-4 pb-16 pt-10">
+      <main className="mx-auto max-w-5xl px-6 pb-20 pt-12">
+
         {/* ── Hero ── */}
-        <section
-          id="home"
-          className="mb-16 grid gap-10 md:grid-cols-[1.8fr,1.2fr] md:items-center"
-        >
-          {/* Left: intro card */}
-          <div
-            data-reveal
-            style={{ transitionDelay: "0.05s" }}
-            className="rounded-3xl bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]"
-          >
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-              Analytics · BI · Generative AI
-            </p>
-            <h1 className="font-display mb-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-              Analytics Product Manager | BI, GenAI &amp; Data Platforms
-            </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-slate-600 sm:text-[15px]">
-              I&apos;m an Analytics and Business Intelligence leader with 14+
-              years of experience building enterprise-scale data products,
-              self-service BI ecosystems, and AI-powered insights for Fortune
-              500 companies in financial services, payments, and consumer
-              technology.
-            </p>
-
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <Link
-                href="#contact"
-                className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/30 hover:bg-blue-700"
-              >
-                Connect With Me
-              </Link>
-              <Link
-                href="https://calendar.app.google/7fvRq224455C7kNS8"
-                target="_blank"
-                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-medium text-slate-700 hover:border-blue-400 hover:text-blue-600"
-              >
-                📅 Book Intro Call
-              </Link>
-              <Link
-                href={CONTACT.linkedin}
-                target="_blank"
-                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-medium text-slate-700 hover:border-blue-400 hover:text-blue-600"
-              >
-                View LinkedIn
-              </Link>
-              <Link
-                href={CONTACT.github}
-                target="_blank"
-                className="text-xs text-slate-500 hover:text-slate-800"
-              >
-                GitHub
-              </Link>
-              <a
-                href="/Sujithkumar_Menon_Resume_DA_AI.pdf"
-                download
-                className="rounded-full border border-slate-200 px-4 py-2 text-xs font-medium text-slate-700 hover:border-blue-400 hover:text-blue-600"
-              >
-                ↓ Resume
-              </a>
-            </div>
-
-            {/* Animated stat counters */}
-            <div className="mt-7 grid gap-px rounded-2xl border border-slate-100 bg-slate-100 sm:grid-cols-4">
-              {highlights.map((h) => (
-                <div
-                  key={h.label}
-                  className="flex flex-col items-start rounded-[inherit] bg-white px-4 py-3 first:rounded-l-2xl last:rounded-r-2xl max-sm:first:rounded-t-2xl max-sm:first:rounded-bl-none max-sm:last:rounded-b-2xl max-sm:last:rounded-tr-none"
-                >
-                  <div className="font-display text-2xl font-bold tracking-tight text-slate-900">
-                    <CountUp target={h.num} suffix={h.suffix} prefix={h.prefix} />
-                  </div>
-                  <div className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">
-                    {h.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 text-xs text-slate-500">
-              Cap-exempt H1B visa holder · Open to roles in Data &amp; AI
-              Product Management, BI Strategy, and Analytics Platforms.
-            </p>
-          </div>
-
-          {/* Right: photo card */}
-          <div
-            data-reveal
-            style={{ transitionDelay: "0.18s" }}
-            className="relative flex justify-center"
-          >
-            <div
-              className="pointer-events-none absolute inset-0 -z-10 blur-3xl"
-              style={{
-                background:
-                  "radial-gradient(ellipse 85% 85% at 50% 45%, rgba(147,197,253,0.5) 0%, rgba(196,181,253,0.2) 50%, transparent 70%)",
-              }}
-            />
-            <div className="relative flex w-full max-w-sm flex-col items-center rounded-3xl bg-gradient-to-b from-blue-50 via-white to-slate-50 p-6 shadow-[0_18px_45px_rgba(37,99,235,0.28)]">
-              <div className="relative h-40 w-40">
-                <div className="absolute inset-0 rounded-full bg-blue-300/60 blur-2xl" />
-                <div className="relative h-full w-full overflow-hidden rounded-full border-[5px] border-blue-600 bg-white">
-                  <Image
-                    src="/sujith-profile.png"
-                    alt="Sujithkumar Menon"
-                    width={260}
-                    height={260}
-                    className="h-full w-full object-cover"
-                    priority
-                  />
-                </div>
-              </div>
-              <div className="mt-4 text-center">
-                <p className="font-display text-sm font-semibold text-slate-900">
-                  Sujithkumar Menon
-                </p>
-                <p className="text-xs text-slate-500">
-                  Analytics &amp; AI Product Manager
-                </p>
-                <p className="mt-3 text-xs text-slate-500">
-                  Building data and GenAI products that turn complex data into
-                  measurable business outcomes.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── About ── */}
-        <section id="about" className="mb-16" data-reveal>
-          <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
-            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-            About Me
-          </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
-            I specialize in building analytics products that make complex data
-            usable for decision-makers. From BI strategy and self-service
-            enablement to GenAI-powered experiences, I focus on delivering
-            measurable value: increased adoption, faster decision cycles, and
-            operational efficiency. I enjoy translating ambiguous business
-            problems into clear product roadmaps, collaborating with
-            cross-functional teams, and shipping solutions that people actually
-            use.
-          </p>
-        </section>
-
-        {/* ── Experience ── */}
-        <section id="experience" className="mb-16">
-          <h2
-            className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900"
-            data-reveal
-          >
-            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-            Experience &amp; Impact
-          </h2>
-          <div className="relative mt-6">
-            <div className="absolute bottom-3 left-[7px] top-3 w-px bg-blue-200" />
-            <div className="space-y-6">
-              {experience.map((job, i) => (
-                <div
-                  key={`${job.company}-${job.period}`}
-                  data-reveal
-                  style={{ transitionDelay: `${i * 0.07}s` }}
-                  className="relative pl-8"
-                >
-                  <div className="absolute left-0 top-5 h-3.5 w-3.5 rounded-full border-2 border-blue-500 bg-white" />
-                  <div className="rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <div>
-                        <h3 className="font-display text-sm font-semibold text-slate-900">
-                          {job.role}
-                        </h3>
-                        <p className="text-xs text-slate-500">{job.company}</p>
-                      </div>
-                      <div className="text-right text-xs text-slate-500">
-                        <div>{job.period}</div>
-                        <div>{job.location}</div>
-                      </div>
-                    </div>
-                    <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
-                      {job.bullets.map((b) => (
-                        <li key={b} className="flex gap-2">
-                          <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
-                          <span>{b}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Projects ── */}
-        <section id="projects" className="mb-16">
-          <div className="flex items-baseline justify-between gap-2" data-reveal>
-            <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
-              <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-              Featured Projects
-            </h2>
-            <span className="text-xs text-slate-500">
-              Selected AI &amp; analytics products
-            </span>
-          </div>
-          <ProjectGrid projects={projects} />
-        </section>
-
-        {/* ── Skills ── */}
-        <section id="skills" className="mb-16">
-          <h2
-            className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900"
-            data-reveal
-          >
-            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-            Skills &amp; Tooling
-          </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {skillCategories.map((cat, i) => (
-              <div
-                key={cat.title}
-                data-reveal
-                style={{ transitionDelay: `${i * 0.07}s` }}
-                className="overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="h-1" style={{ backgroundColor: cat.accent }} />
-                <div className="p-4">
-                  <h3 className="font-display text-sm font-semibold text-slate-900">
-                    {cat.title}
-                  </h3>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {cat.items.map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600"
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Education & Certifications ── */}
-        <section id="education" className="mb-16 space-y-12">
-          <div data-reveal>
-            <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
-              <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-              Education
-            </h2>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              {education.map((e, i) => (
-                <div
-                  key={e.title}
-                  data-reveal
-                  style={{ transitionDelay: `${i * 0.1}s` }}
-                  className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <a
-                    href={e.certLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group block overflow-hidden bg-slate-50"
-                  >
-                    <div className="relative h-52 w-full">
-                      <Image
-                        src={e.certImage}
-                        alt={`${e.title} certificate`}
-                        fill
-                        className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
-                      />
-                    </div>
-                  </a>
-                  <div className="p-4">
-                    <h3 className="font-display text-sm font-semibold text-slate-900">
-                      {e.title}
-                    </h3>
-                    <p className="mt-0.5 text-xs text-slate-500">{e.org}</p>
-                    {e.date && (
-                      <p className="mt-0.5 text-[11px] text-slate-400">{e.date}</p>
-                    )}
-                    <p className="mt-2 text-xs text-slate-600">{e.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2
-              className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900"
-              data-reveal
-            >
-              <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-              Certifications &amp; Training
-            </h2>
-            <div className="mt-6 grid gap-5 sm:grid-cols-3">
-              {certifications.map((cert, i) => (
-                <div
-                  key={cert.title}
-                  data-reveal
-                  style={{ transitionDelay: `${i * 0.09}s` }}
-                  className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <div
-                    style={{
-                      background: `linear-gradient(135deg, ${cert.colorFrom}, ${cert.colorTo})`,
-                    }}
-                    className="relative flex h-32 items-center justify-center overflow-hidden"
-                  >
-                    <span className="absolute select-none text-[68px] font-black leading-none text-white/10">
-                      {cert.initials}
-                    </span>
-                    <span className="font-display relative text-2xl font-bold tracking-tight text-white/90">
-                      {cert.initials}
-                    </span>
-                    {cert.verified && (
-                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
-                        ✓ Verified
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col p-4">
-                    <div>
-                      <h3 className="font-display text-sm font-semibold leading-snug text-slate-900">
-                        {cert.title}
-                      </h3>
-                      <p className="mt-1 text-xs text-slate-500">{cert.org}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-400">{cert.date}</p>
-                    </div>
-                    <div className="mt-auto pt-4">
-                      <Link
-                        href={cert.link}
-                        target="_blank"
-                        className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700"
-                      >
-                        {cert.linkLabel} →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Contact ── */}
-        <section id="contact" data-reveal>
-          <h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
-            <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-            Let&apos;s Connect
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm text-slate-600">
-            Ready to discuss how I can help drive your analytics and AI
-            initiatives? Whether you&apos;re scaling a BI platform, exploring
-            GenAI capabilities, or building data products from 0→1, I&apos;d
-            love to talk.
-          </p>
-
-          <div className="mt-6 grid gap-6 md:grid-cols-3">
-            <div className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200">
-              <p className="text-xs font-semibold text-slate-500">Location</p>
-              <p className="mt-1 text-sm text-slate-900">{CONTACT.location}</p>
-            </div>
-            <div className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200">
-              <p className="text-xs font-semibold text-slate-500">Email</p>
-              <Link
-                href={`mailto:${CONTACT.email}`}
-                className="mt-1 block text-sm font-medium text-blue-600 hover:text-blue-700"
-              >
-                {CONTACT.email}
-              </Link>
-            </div>
-            <div className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200">
-              <p className="text-xs font-semibold text-slate-500">
-                Profiles &amp; Links
+        <section id="home" className="mb-28">
+          <div className="flex items-start justify-between gap-8">
+            <div className="flex-1" data-reveal>
+              <p className="mb-5 text-[10px] font-medium uppercase tracking-[0.22em] text-mid">
+                Analytics · BI · Generative AI
               </p>
-              <div className="mt-2 flex flex-col gap-1.5 text-sm">
+              <h1 className="font-display text-[clamp(3rem,7vw,5rem)] font-light leading-[1.05] tracking-tight text-ink">
+                Sujithkumar
+                <br />
+                Menon
+              </h1>
+              <p className="mt-6 max-w-md text-[15px] leading-relaxed text-mid">
+                14 years turning complex data into decisions and AI into products.
+                Analytics PM for Fortune 500 companies in fintech, payments, and
+                consumer tech.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <a
+                  href="#contact"
+                  className="bg-accent px-5 py-2.5 text-[11px] uppercase tracking-[0.18em] text-paper transition-opacity hover:opacity-80"
+                >
+                  Connect
+                </a>
+                <a
+                  href="/Sujithkumar_Menon_Resume_DA_AI.pdf"
+                  download
+                  className="border-b border-ink pb-px text-[11px] uppercase tracking-[0.18em] text-ink transition-colors hover:border-mid hover:text-mid"
+                >
+                  Resume ↓
+                </a>
                 <Link
                   href={CONTACT.linkedin}
                   target="_blank"
-                  className="text-blue-600 hover:text-blue-700"
+                  className="text-[11px] uppercase tracking-[0.18em] text-mid transition-colors hover:text-ink"
                 >
                   LinkedIn
                 </Link>
                 <Link
                   href={CONTACT.github}
                   target="_blank"
-                  className="text-blue-600 hover:text-blue-700"
+                  className="text-[11px] uppercase tracking-[0.18em] text-mid transition-colors hover:text-ink"
                 >
                   GitHub
+                </Link>
+                <Link
+                  href="https://calendar.app.google/7fvRq224455C7kNS8"
+                  target="_blank"
+                  className="text-[11px] uppercase tracking-[0.18em] text-mid transition-colors hover:text-ink"
+                >
+                  Book a Call
+                </Link>
+              </div>
+            </div>
+
+            {/* Photo */}
+            <div
+              className="mt-1 hidden shrink-0 md:block"
+              data-reveal
+              style={{ transitionDelay: "0.1s" }}
+            >
+              <div className="h-[88px] w-[88px] overflow-hidden rounded-full border border-rule">
+                <Image
+                  src="/sujith-profile.png"
+                  alt="Sujithkumar Menon"
+                  width={176}
+                  height={176}
+                  className="h-full w-full object-cover"
+                  priority
+                />
+              </div>
+              <p className="mt-2 text-center text-[9px] uppercase tracking-[0.12em] text-mid">
+                NYC Metro
+              </p>
+            </div>
+          </div>
+
+          {/* Signature element: editorial stat strip */}
+          <div
+            className="mt-16 grid grid-cols-2 gap-px bg-rule sm:grid-cols-4"
+            data-reveal
+            style={{ transitionDelay: "0.15s" }}
+          >
+            {highlights.map((h) => (
+              <div key={h.label} className="bg-paper px-6 py-8">
+                <div className="font-display text-[clamp(2.25rem,5vw,3.5rem)] font-light leading-none text-ink">
+                  <CountUp target={h.num} suffix={h.suffix} prefix={h.prefix} />
+                </div>
+                <p className="mt-3 text-[9px] uppercase tracking-[0.2em] text-mid">
+                  {h.label}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-4 text-[11px] text-mid">
+            Cap-exempt H1B visa holder · Open to Data &amp; AI Product Management,
+            BI Strategy, and Analytics Platform roles.
+          </p>
+        </section>
+
+        {/* ── About ── */}
+        <section id="about" className="mb-24 border-t border-rule pt-12" data-reveal>
+          <p className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-mid">
+            About
+          </p>
+          <h2 className="font-display mb-6 text-[1.75rem] font-light text-ink">
+            Analytics by craft. Product by choice.
+          </h2>
+          <p className="max-w-2xl text-[15px] leading-relaxed text-mid">
+            I specialize in building analytics products that make complex data usable
+            for decision-makers. From BI strategy and self-service enablement to
+            GenAI-powered experiences, I focus on delivering measurable value:
+            increased adoption, faster decision cycles, and operational efficiency. I
+            enjoy translating ambiguous business problems into clear product roadmaps,
+            collaborating with cross-functional teams, and shipping solutions that
+            people actually use.
+          </p>
+        </section>
+
+        {/* ── Experience ── */}
+        <section id="experience" className="mb-24 border-t border-rule pt-12">
+          <p
+            className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-mid"
+            data-reveal
+          >
+            Experience
+          </p>
+          <h2
+            className="font-display mb-10 text-[1.75rem] font-light text-ink"
+            data-reveal
+          >
+            14 years of impact
+          </h2>
+
+          <div className="divide-y divide-rule">
+            {experience.map((job, i) => (
+              <div
+                key={`${job.company}-${job.period}`}
+                data-reveal
+                style={{ transitionDelay: `${i * 0.06}s` }}
+                className="grid gap-4 py-8 md:grid-cols-[1fr,auto]"
+              >
+                <div>
+                  <h3 className="font-display text-[1.2rem] font-normal text-ink">
+                    {job.role}
+                  </h3>
+                  <p className="mt-0.5 text-sm text-mid">
+                    {job.company} · {job.location}
+                  </p>
+                  <ul className="mt-4 space-y-1.5 border-l border-rule pl-4">
+                    {job.bullets.map((b) => (
+                      <li key={b} className="text-[13px] leading-relaxed text-mid">
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="shrink-0 text-sm text-mid md:text-right">
+                  {job.period}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Projects ── */}
+        <section id="projects" className="mb-24 border-t border-rule pt-12">
+          <div data-reveal>
+            <p className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-mid">
+              Projects
+            </p>
+            <h2 className="font-display mb-10 text-[1.75rem] font-light text-ink">
+              Selected AI &amp; analytics products
+            </h2>
+          </div>
+          <ProjectGrid projects={projects} />
+        </section>
+
+        {/* ── Skills ── */}
+        <section id="skills" className="mb-24 border-t border-rule pt-12">
+          <p
+            className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-mid"
+            data-reveal
+          >
+            Skills
+          </p>
+          <h2
+            className="font-display mb-10 text-[1.75rem] font-light text-ink"
+            data-reveal
+          >
+            Tooling &amp; expertise
+          </h2>
+          <div className="divide-y divide-rule">
+            {skillCategories.map((cat, i) => (
+              <div
+                key={cat.title}
+                data-reveal
+                style={{ transitionDelay: `${i * 0.07}s` }}
+                className="grid items-baseline gap-4 py-6 md:grid-cols-[220px,1fr]"
+              >
+                <h3 className="font-display text-base font-normal text-ink">
+                  {cat.title}
+                </h3>
+                <p className="text-[13px] leading-relaxed text-mid">
+                  {cat.items.join(" · ")}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Education ── */}
+        <section id="education" className="mb-24 border-t border-rule pt-12">
+          <p
+            className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-mid"
+            data-reveal
+          >
+            Education
+          </p>
+          <h2
+            className="font-display mb-10 text-[1.75rem] font-light text-ink"
+            data-reveal
+          >
+            Academic background
+          </h2>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {education.map((e, i) => (
+              <div
+                key={e.title}
+                data-reveal
+                style={{ transitionDelay: `${i * 0.1}s` }}
+                className="overflow-hidden border border-rule"
+              >
+                <a
+                  href={e.certLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block bg-paper"
+                >
+                  <div className="relative h-48 w-full">
+                    <Image
+                      src={e.certImage}
+                      alt={`${e.title} certificate`}
+                      fill
+                      className="object-contain p-4"
+                    />
+                  </div>
+                </a>
+                <div className="border-t border-rule p-5">
+                  <h3 className="font-display text-base font-normal text-ink">
+                    {e.title}
+                  </h3>
+                  <p className="mt-0.5 text-sm text-mid">{e.org}</p>
+                  {e.date && (
+                    <p className="mt-0.5 text-[11px] text-mid">{e.date}</p>
+                  )}
+                  <p className="mt-2 text-[13px] leading-relaxed text-mid">
+                    {e.detail}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Certifications */}
+          <p
+            className="mb-1.5 mt-14 text-[10px] uppercase tracking-[0.22em] text-mid"
+            data-reveal
+          >
+            Certifications
+          </p>
+          <h2
+            className="font-display mb-8 text-[1.75rem] font-light text-ink"
+            data-reveal
+          >
+            Professional credentials
+          </h2>
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            {certifications.map((cert, i) => (
+              <div
+                key={cert.title}
+                data-reveal
+                style={{ transitionDelay: `${i * 0.09}s` }}
+                className="border border-rule p-5"
+              >
+                <div className="mb-4 flex h-10 w-10 items-center justify-center bg-accent font-sans text-[11px] font-medium text-paper">
+                  {cert.initials}
+                </div>
+                <h3 className="font-display text-base font-normal leading-snug text-ink">
+                  {cert.title}
+                </h3>
+                <p className="mt-1 text-sm text-mid">{cert.org}</p>
+                <p className="mt-0.5 text-[11px] text-mid">{cert.date}</p>
+                {cert.verified && (
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-accent">
+                    ✓ Verified
+                  </p>
+                )}
+                <Link
+                  href={cert.link}
+                  target="_blank"
+                  className="mt-4 block text-[11px] uppercase tracking-[0.15em] text-accent transition-opacity hover:opacity-70"
+                >
+                  {cert.linkLabel} →
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Contact ── */}
+        <section
+          id="contact"
+          className="border-t border-rule pb-16 pt-12"
+          data-reveal
+        >
+          <p className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-mid">
+            Contact
+          </p>
+          <h2 className="font-display mb-6 text-[1.75rem] font-light text-ink">
+            Let&apos;s work together.
+          </h2>
+          <p className="mb-10 max-w-md text-[15px] leading-relaxed text-mid">
+            Open to analytics PM, BI strategy, and AI product roles. Ready to
+            discuss how data can drive your next initiative.
+          </p>
+
+          <div className="grid gap-8 text-sm sm:grid-cols-3">
+            <div>
+              <p className="mb-2 text-[9px] uppercase tracking-[0.22em] text-mid">
+                Location
+              </p>
+              <p className="text-ink">{CONTACT.location}</p>
+            </div>
+            <div>
+              <p className="mb-2 text-[9px] uppercase tracking-[0.22em] text-mid">
+                Email
+              </p>
+              <Link
+                href={`mailto:${CONTACT.email}`}
+                className="text-accent transition-opacity hover:opacity-70"
+              >
+                {CONTACT.email}
+              </Link>
+            </div>
+            <div>
+              <p className="mb-2 text-[9px] uppercase tracking-[0.22em] text-mid">
+                Links
+              </p>
+              <div className="flex flex-col gap-1.5">
+                <Link
+                  href={CONTACT.linkedin}
+                  target="_blank"
+                  className="text-accent transition-opacity hover:opacity-70"
+                >
+                  LinkedIn
+                </Link>
+                <Link
+                  href={CONTACT.github}
+                  target="_blank"
+                  className="text-accent transition-opacity hover:opacity-70"
+                >
+                  GitHub
+                </Link>
+                <Link
+                  href="https://calendar.app.google/7fvRq224455C7kNS8"
+                  target="_blank"
+                  className="text-accent transition-opacity hover:opacity-70"
+                >
+                  Book Intro Call
                 </Link>
               </div>
             </div>
           </div>
 
-          <p className="mt-8 text-xs text-slate-500">
-            © {new Date().getFullYear()} Sujithkumar Menon — Transforming data
-            into actionable insights &amp; AI-powered products.
+          <p className="mt-12 text-[11px] text-mid">
+            © {new Date().getFullYear()} Sujithkumar Menon — Transforming data into
+            actionable insights &amp; AI-powered products.
           </p>
         </section>
       </main>

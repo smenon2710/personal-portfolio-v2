@@ -16,6 +16,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("home");
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const sectionIds = navItems.map((item) => item.href.slice(1));
@@ -24,6 +25,7 @@ export default function Header() {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
       setScrollProgress((scrollTop / (scrollHeight - clientHeight)) * 100);
+      setScrolled(scrollTop > 10);
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
         const el = document.getElementById(sectionIds[i]);
@@ -43,36 +45,30 @@ export default function Header() {
   return (
     <>
       <div
-        className="fixed left-0 top-0 z-[60] h-0.5 bg-blue-600"
+        className="fixed left-0 top-0 z-[60] h-px bg-accent"
         style={{ width: `${scrollProgress}%` }}
       />
 
-      <header className="relative sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-              SM
-            </span>
-            <div className="flex flex-col">
-              <span className="font-display text-sm font-semibold tracking-tight">
-                Sujithkumar Menon
-              </span>
-              <span className="text-[11px] text-slate-500">
-                Analytics Product Manager · BI · GenAI
-              </span>
-            </div>
-          </div>
+      <header
+        className={`sticky top-0 z-50 bg-paper transition-shadow duration-300 ${
+          scrolled ? "shadow-[0_1px_0_var(--rule)]" : ""
+        }`}
+      >
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+          <span className="text-[13px] font-medium tracking-tight text-ink">
+            Sujithkumar Menon
+          </span>
 
-          <div className="hidden items-center gap-4 md:flex">
-            <nav className="flex gap-4 text-xs font-medium">
+          <div className="hidden items-center gap-8 md:flex">
+            <nav className="flex gap-6">
               {navItems.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`rounded-full px-3 py-1 transition-colors ${
+                  className={`text-[10px] uppercase tracking-[0.18em] transition-colors ${
                     activeSection === item.href.slice(1)
-                      ? "bg-blue-50 font-semibold text-blue-700"
-                      : "text-slate-600 hover:bg-blue-50 hover:text-blue-700"
+                      ? "text-accent"
+                      : "text-mid hover:text-ink"
                   }`}
                 >
                   {item.label}
@@ -82,42 +78,52 @@ export default function Header() {
             <Link
               href="https://calendar.app.google/7fvRq224455C7kNS8"
               target="_blank"
-              className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-blue-500/40 hover:bg-blue-700"
+              className="text-[10px] uppercase tracking-[0.18em] text-accent transition-opacity hover:opacity-70"
             >
-              📅 Book Intro Call
+              Book a Call
             </Link>
           </div>
 
           <button
-            className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 md:hidden"
+            className="text-mid transition-colors hover:text-ink md:hidden"
             onClick={() => setMobileMenuOpen((v) => !v)}
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path
+                  d="M2 2l12 12M14 2L2 14"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
               </svg>
             ) : (
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path
+                  d="M2 4h12M2 8h12M2 12h12"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
               </svg>
             )}
           </button>
         </div>
 
         {mobileMenuOpen && (
-          <div className="absolute left-0 right-0 top-full border-b border-slate-100 bg-white/95 shadow-lg backdrop-blur md:hidden">
-            <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
+          <div className="border-t border-rule bg-paper md:hidden">
+            <nav className="mx-auto flex max-w-5xl flex-col gap-5 px-6 py-6">
               {navItems.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className={`text-[11px] uppercase tracking-[0.18em] transition-colors ${
                     activeSection === item.href.slice(1)
-                      ? "bg-blue-50 font-semibold text-blue-700"
-                      : "text-slate-700 hover:bg-blue-50 hover:text-blue-700"
+                      ? "text-accent"
+                      : "text-mid"
                   }`}
                 >
                   {item.label}
@@ -128,9 +134,9 @@ export default function Header() {
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 rounded-full bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold text-white hover:bg-blue-700"
+                className="text-[11px] uppercase tracking-[0.18em] text-accent"
               >
-                📅 Book Intro Call
+                Book a Call
               </a>
             </nav>
           </div>

@@ -1,34 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --paper:  #F8F8F6;
+  --ink:    #111110;
+  --mid:    #77766F;
+  --rule:   #E5E5E1;
+  --accent: #1A4480;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-dm-sans);
-  --font-display: var(--font-syne);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-paper:  var(--paper);
+  --color-ink:    var(--ink);
+  --color-mid:    var(--mid);
+  --color-rule:   var(--rule);
+  --color-accent: var(--accent);
+  --font-sans:    var(--font-dm-sans);
+  --font-display: var(--font-cormorant);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
 }
 
-/* Scroll-reveal */
+/* Scroll-reveal — gentle */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 [data-reveal].revealed {
@@ -36,7 +35,7 @@ body {
   transform: translateY(0);
 }
 
-/* Streaming cursor — blinks inline after assistant text */
+/* Streaming cursor */
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
@@ -45,6 +44,6 @@ body {
 .streaming-cursor::after {
   content: '|';
   margin-left: 1px;
-  color: #94a3b8;
+  color: var(--mid);
   animation: blink 0.65s ease-in-out infinite;
 }

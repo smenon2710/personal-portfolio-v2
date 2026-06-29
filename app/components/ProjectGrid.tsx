@@ -38,17 +38,16 @@ function ProjectEmbed({ project }: { project: Project }) {
 
   if (state === "idle") {
     return (
-      <div className="flex h-40 flex-col items-center justify-center gap-2 px-4 text-center text-xs text-slate-500">
-        <p>
-          Load an interactive preview of this app inside the card, or use{" "}
-          <span className="font-semibold text-slate-700">Live Demo</span> to open
-          it in a new tab.
+      <div className="flex h-40 flex-col items-center justify-center gap-3 px-6 text-center">
+        <p className="text-[12px] text-mid">
+          Load an interactive preview, or use{" "}
+          <span className="text-ink">Live Demo</span> to open in a new tab.
         </p>
         <button
           onClick={startLoad}
-          className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
+          className="text-[11px] uppercase tracking-[0.18em] text-accent transition-opacity hover:opacity-70"
         >
-          Load Preview
+          Load Preview →
         </button>
       </div>
     );
@@ -56,14 +55,16 @@ function ProjectEmbed({ project }: { project: Project }) {
 
   if (state === "error") {
     return (
-      <div className="flex h-40 flex-col items-center justify-center gap-2 px-4 text-center text-xs text-slate-500">
-        <p>Preview unavailable — the app may be sleeping or unreachable.</p>
+      <div className="flex h-40 flex-col items-center justify-center gap-3 px-6 text-center">
+        <p className="text-[12px] text-mid">
+          Preview unavailable — the app may be sleeping or unreachable.
+        </p>
         <Link
           href={project.liveUrl}
           target="_blank"
-          className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700"
+          className="text-[11px] uppercase tracking-[0.18em] text-accent transition-opacity hover:opacity-70"
         >
-          Open in New Tab
+          Open in New Tab →
         </Link>
       </div>
     );
@@ -91,60 +92,57 @@ function ProjectEmbed({ project }: { project: Project }) {
 
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
   return (
-    <div className="mt-6 grid gap-6 md:grid-cols-2">
+    <div className="grid gap-5 md:grid-cols-2">
       {projects.map((project, i) => (
         <article
           key={project.name}
           data-reveal
           style={{ transitionDelay: `${i * 0.08}s` }}
-          className={`flex flex-col rounded-3xl bg-white p-5 shadow-sm shadow-slate-200 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md ${
-            project.isAgent ? "border border-blue-100" : ""
-          }`}
+          className="flex flex-col border border-rule transition-colors duration-200 hover:border-mid"
         >
-          <h3 className="font-display text-sm font-semibold text-slate-900">
-            {project.name}
-          </h3>
-          <p className="mt-2 text-xs text-slate-600">{project.description}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {project.tech.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600"
-              >
-                {tag}
-              </span>
-            ))}
+          <div className="flex-1 p-5">
+            {project.isAgent && (
+              <p className="mb-1.5 text-[9px] uppercase tracking-[0.2em] text-accent">
+                AI Agent
+              </p>
+            )}
+            <h3 className="font-display text-[1.1rem] font-normal text-ink">
+              {project.name}
+            </h3>
+            <p className="mt-2 text-[13px] leading-relaxed text-mid">
+              {project.description}
+            </p>
+            <p className="mt-3 text-[12px] text-mid opacity-70">
+              {project.tech.join(" · ")}
+            </p>
           </div>
 
           {project.embedUrl && (
-            <div className="mt-4 overflow-hidden rounded-2xl bg-slate-50">
+            <div className="overflow-hidden border-t border-rule bg-paper">
               <ProjectEmbed project={project} />
             </div>
           )}
 
-          <div className="mt-4 flex gap-3 text-xs">
+          <div className="flex gap-6 border-t border-rule px-5 py-3">
             <Link
               href={project.liveUrl}
               target="_blank"
-              className={`rounded-full px-3 py-1 font-medium text-white hover:bg-blue-700 ${
-                project.isAgent ? "bg-blue-500" : "bg-blue-600"
-              }`}
+              className="text-[11px] uppercase tracking-[0.15em] text-accent transition-opacity hover:opacity-70"
             >
-              {project.isAgent ? "Open Agent" : "Live Demo"}
+              {project.isAgent ? "Open Agent" : "Live Demo"} →
             </Link>
             <Link
               href={project.githubUrl}
               target="_blank"
-              className="rounded-full border border-slate-200 px-3 py-1 font-medium text-slate-700 hover:border-blue-400 hover:text-blue-600"
+              className="text-[11px] uppercase tracking-[0.15em] text-mid transition-colors hover:text-ink"
             >
-              GitHub
+              GitHub →
             </Link>
           </div>
 
           {project.isAgent && (
-            <p className="mt-2 text-[11px] text-slate-500">
-              Tip: You can also use the floating bubble in the bottom-right corner
-              to chat with this agent while browsing the site.
+            <p className="border-t border-rule px-5 py-2 text-[11px] text-mid">
+              Tip: Use the chat bubble in the bottom-right to talk with this agent while browsing.
             </p>
           )}
         </article>
