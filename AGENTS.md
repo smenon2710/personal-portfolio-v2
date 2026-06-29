@@ -227,6 +227,22 @@ State:
 
 **Markdown rendering:** Assistant messages are rendered through the shared `Markdown` component (`app/components/Markdown.tsx`), which handles bold, italic, bullet lists, numbered lists, and headings.
 
+**Visual design:** All colors use the site's design token system — no hardcoded hex or `slate-*`/`blue-*` Tailwind classes.
+
+| Element | Classes |
+|---|---|
+| Trigger button | `bg-accent text-paper` — flat navy rectangle, `text-[11px] uppercase tracking-[0.15em]` |
+| Panel | `border-rule bg-paper` — sharp corners, matches project card aesthetic |
+| Header avatar | `bg-accent text-paper` — square badge, same pattern as cert initials |
+| Header name | `font-display font-light text-ink` — Cormorant Garamond, matches section headings |
+| Header subtitle | `text-[9px] uppercase tracking-[0.18em] text-mid` — eyebrow label style |
+| User message bubble | `bg-accent text-paper` — navy fill, no rounded corners |
+| Assistant message bubble | `border border-rule bg-paper text-ink` — hairline bordered, transparent |
+| Loading dots | `bg-mid` |
+| Input field | `border-rule bg-paper text-ink` with `focus:ring-accent/40` |
+| Send button | `bg-accent text-paper hover:opacity-80` |
+| Footer | `text-[9px] uppercase tracking-[0.15em] text-mid` |
+
 Streaming pattern:
 1. `POST /api/chat` → read `X-UserInfo` header → `setUserInfo(newUserInfo)`
 2. Add empty assistant message → read `res.body` as `ReadableStream`

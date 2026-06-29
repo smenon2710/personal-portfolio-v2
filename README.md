@@ -183,3 +183,5 @@ Floating bottom-right button opens a native React chat panel. Calls `/api/chat` 
 4. All subsequent messages answered by the LLM with full profile context
 
 **Persistence:** None — the widget is fully stateless. Every page load starts a fresh session so the email, purpose, and Airtable lead-capture gates always run. The trash icon in the chat header resets the in-memory conversation within the current session.
+
+**Visual design:** Fully aligned with the site's design system — no hardcoded hex or `slate-*`/`blue-*` classes. Trigger button: flat `bg-accent` navy rectangle with uppercase tracking label. Panel: sharp corners with `border-rule bg-paper`, matching project cards. User bubbles: `bg-accent text-paper`. Assistant bubbles: `border-rule bg-paper` (hairline bordered). All typography uses site eyebrow and display conventions.
