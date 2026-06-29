@@ -13,7 +13,7 @@ Personal portfolio site for Sujithkumar Menon, Analytics & AI Product Manager. B
 | Framework | Next.js 16 (App Router) |
 | UI | React 19, TypeScript 5 |
 | Styling | Tailwind CSS v4 (PostCSS, no config file) |
-| Fonts | Syne (headings) + DM Sans (body) via `next/font/google` |
+| Fonts | Cormorant Garamond (display) + DM Sans (body) via `next/font/google` |
 | CMS | Airtable — all portfolio content editable without code |
 | Chat LLM | Groq — GPT OSS 120B (`openai/gpt-oss-120b`) |
 | Lead capture | Airtable REST API |
@@ -60,7 +60,7 @@ app/
 │   ├── CountUp.tsx           # Animated stat counter (IntersectionObserver + RAF)
 │   ├── Markdown.tsx          # Shared markdown renderer (bold, lists, headings)
 │   ├── ProjectGrid.tsx       # Project cards with per-card iframe preview + error fallback
-│   ├── ChatWidget.tsx        # Floating chat UI with localStorage persistence
+│   ├── ChatWidget.tsx        # Floating chat UI, stateless (no localStorage)
 │   └── ScrollRevealInit.tsx  # Wires up [data-reveal] IntersectionObserver on mount
 ├── lib/
 │   └── airtable.ts           # Typed fetchers for all 7 portfolio content tables
@@ -146,28 +146,28 @@ All portfolio content is stored in Airtable and fetched by `app/lib/airtable.ts`
 
 | Section | ID | Notes |
 |---|---|---|
-| Hero | `#home` | 2-col grid; KPI stat counters; profile photo; Resume download |
-| About | `#about` | Bio paragraph |
-| Experience | `#experience` | 6 entries; vertical timeline with dot markers |
+| Hero | `#home` | Full-width editorial name at display scale; small profile photo; CTA links; stat strip |
+| About | `#about` | Bio paragraph, wide measure |
+| Experience | `#experience` | 6 entries; `divide-y` hairline layout; left-border bullet lists |
 | Projects | `#projects` | 5 cards; lazy-loaded iframe previews with error fallback |
-| Skills | `#skills` | 4 categories; colored accent bars |
-| Education | `#education` | 2 cert thumbnail cards (B.E. + Purdue GenAI) |
-| Certifications | `#education` | 2 visual gradient cards (Tableau + PM Certified) |
+| Skills | `#skills` | 4 categories; two-column label + dot-separated items |
+| Education | `#education` | 2 cert thumbnail cards with thin border (B.E. + Purdue GenAI) |
+| Certifications | `#education` | 2 bordered cards with navy initial badge (Tableau + PM Certified) |
 | Contact | `#contact` | Location, email, LinkedIn, GitHub |
 
 ---
 
 ## Visual Design
 
-- **Fonts** — Syne (`font-display`) for headings, DM Sans (`font-sans`) for body
-- **Section headings** — Thin 3px blue pill bar to the left of every `<h2>` (signature element)
-- **Stat counters** — Bold dark KPI tiles that count up with easeOutCubic on scroll-into-view
-- **Scroll-reveal** — Fade-up on viewport entry with staggered delays per card
-- **Progress bar** — 2px blue bar at top tracking scroll depth
-- **Active nav** — Scroll-spy highlights current section in sticky header
-- **Timeline** — Vertical line + dot markers in the Experience section
-- **Card hover lift** — `translateY(-2px)` + shadow on all interactive cards
-- **Mobile nav** — Hamburger toggle with full-width dropdown
+- **Palette** — Warm off-white paper (`#F8F8F6`), near-black ink (`#111110`), warm mid-grey (`#77766F`), hairline rules (`#E5E5E1`), deep navy accent (`#1A4480`)
+- **Fonts** — Cormorant Garamond light (`font-display`) for headings and stats, DM Sans (`font-sans`) for body
+- **Signature element** — Four KPI stats as oversized Cormorant Garamond numerals in a hairline-divided strip (no card backgrounds)
+- **Section headings** — Tracked uppercase eyebrow label above a light-weight display serif `<h2>`
+- **Scroll-reveal** — Fade-up (12px) on viewport entry with staggered delays
+- **Progress bar** — 1px navy bar at top tracking scroll depth
+- **Active nav** — Scroll-spy changes nav link to accent navy; no background fill
+- **Experience layout** — `divide-y` rule separators; left-border bullet lists
+- **Mobile nav** — Hamburger toggle with rule-bordered dropdown
 - **Chat streaming cursor** — Blinking `|` at the end of in-progress assistant messages
 
 ---

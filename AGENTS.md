@@ -25,7 +25,7 @@ TypeScript errors surface during `dev` and `build`. There is no separate typeche
 | React | 19.2.0 | |
 | TypeScript | 5 | |
 | Tailwind CSS | 4 | No config file — all in `globals.css` via `@theme` |
-| Fonts | — | Syne + DM Sans via `next/font/google` (CSS vars `--font-syne`, `--font-dm-sans`) |
+| Fonts | — | Cormorant Garamond + DM Sans via `next/font/google` (CSS vars `--font-cormorant`, `--font-dm-sans`) |
 | groq-sdk | ^1.3.0 | Server-side only — chat API route |
 | Deployment | — | Vercel (auto-deploys on push to `main`) |
 
@@ -102,46 +102,47 @@ The Airtable personal access token requires these scopes:
 
 #### Fonts
 
-`layout.tsx` loads Syne and DM Sans via `next/font/google`, applying CSS variables `--font-syne` and `--font-dm-sans` to `<body>`. `globals.css` maps them into Tailwind:
+`layout.tsx` loads Cormorant Garamond and DM Sans via `next/font/google`, applying CSS variables `--font-cormorant` and `--font-dm-sans` to `<body>`. `globals.css` maps them into Tailwind:
 
 ```css
 @theme inline {
-  --font-sans: var(--font-dm-sans);    /* font-sans utility */
-  --font-display: var(--font-syne);    /* font-display utility */
+  --font-sans:    var(--font-dm-sans);       /* font-sans utility — body text */
+  --font-display: var(--font-cormorant);     /* font-display utility — headings, stats */
 }
 ```
 
-Use `font-display` for headings and labels, `font-sans` (default) for body text.
+Use `font-display font-light` for headings and stat numbers, `font-sans` (default) for body text and labels.
+
+#### Color system
+
+Defined as CSS variables in `globals.css` and mapped into Tailwind via `@theme inline`:
+
+| Variable | Value | Tailwind utility | Use |
+|---|---|---|---|
+| `--paper` | `#F8F8F6` | `bg-paper`, `text-paper` | Page background |
+| `--ink` | `#111110` | `text-ink`, `border-ink` | Primary text |
+| `--mid` | `#77766F` | `text-mid` | Secondary text, labels |
+| `--rule` | `#E5E5E1` | `border-rule`, `divide-rule`, `bg-rule` | Hairline dividers |
+| `--accent` | `#1A4480` | `text-accent`, `bg-accent` | CTAs, active nav, cert badges |
+
+Use **inline styles only** for stagger delays (`style={{ transitionDelay: '...' }}`). All colors must use the Tailwind utilities above — never hardcode hex values in JSX.
 
 #### Section headings
 
-Every `<h2>` uses a flex layout with a 3px blue pill bar as a leading accent:
+Every section uses a tracked uppercase eyebrow label followed by a light-weight display serif heading:
 
 ```tsx
-<h2 className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900">
-  <span className="inline-block h-5 w-[3px] shrink-0 rounded-full bg-blue-600" aria-hidden="true" />
-  Section Title
-</h2>
+<p className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-mid">Section Name</p>
+<h2 className="font-display text-[1.75rem] font-light text-ink">Section headline.</h2>
 ```
 
-Maintain this pattern for all new sections.
+Maintain this pattern for all new sections. Do not use the old blue pill-bar pattern.
 
 #### Scroll-reveal
 
 Add `data-reveal` to any element to opt into the scroll-reveal system. `ScrollRevealInit` sets up a single IntersectionObserver that adds `.revealed` to matching elements. CSS transition is in `globals.css`.
 
 Add `style={{ transitionDelay: '0.Xs' }}` for staggered entry within a group.
-
-#### Inline styles vs Tailwind
-
-Use **inline styles** for dynamic values to avoid Tailwind class purging:
-- Gradient colors: `style={{ background: '...' }}`
-- Skill category accent bars: `style={{ backgroundColor: cat.accent }}`
-- Stagger delays: `style={{ transitionDelay: '...' }}`
-
-#### Color discipline
-
-Blue (`blue-600` / `#2563EB`) is reserved for primary actions and section heading accent bars. Use slate for decorative elements, tag backgrounds, and bullet points.
 
 ---
 
@@ -167,7 +168,7 @@ All portfolio content is editable via Airtable — no code changes needed. The p
 - **Skills.Items** — plain long text, one skill per line.
 - **Projects.Tech** — single line text, comma-separated (`GPT-4, Streamlit, Python`).
 - **Sort** — controls display order; lower number = shown first.
-- **Certifications.ColorFrom / ColorTo** — hex colors for the gradient banner (`#1e3a5f`).
+- **Certifications.ColorFrom / ColorTo** — fetched but not currently rendered (gradient banners removed in redesign; UI uses the navy `--accent` badge instead).
 
 ### Adding content
 
@@ -175,9 +176,9 @@ All portfolio content is editable via Airtable — no code changes needed. The p
 
 **New project** — add a row to `Projects`. Set `IsAgent` checkbox if it's an AI agent (changes button label and adds blue border).
 
-**New certification** — add a row to `Certifications` with `ColorFrom`, `ColorTo`, `Initials`, `Link`, `LinkLabel`. Set `Verified` checkbox for Credly-verified badges.
+**New certification** — add a row to `Certifications` with `Initials`, `Link`, `LinkLabel`. Set `Verified` checkbox for Credly-verified badges. (`ColorFrom`/`ColorTo` are stored but not currently used in the UI.)
 
-**New skill category** — add a row to `Skills` with the `Accent` hex color and `Items` (one per line).
+**New skill category** — add a row to `Skills` with `Title` and `Items` (one per line). (`Accent` hex color is stored but not rendered — the redesign uses plain text with dot separators.)
 
 **New education entry** — add a row to `Education` with `CertImage` (public path like `/be-cert.jpg`) and `CertLink`.
 
